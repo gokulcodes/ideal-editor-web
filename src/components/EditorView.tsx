@@ -65,7 +65,12 @@ export default function EditorView() {
   }, [editor, dispatch]);
 
   function handleFocus() {
-    navigator.virtualKeyboard.show()
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
+    const newNavigator: any = window.navigator;
+
+    if (newNavigator?.virtualKeyboard) {
+      newNavigator.virtualKeyboard.show()
+    }
   }
 
   return (
