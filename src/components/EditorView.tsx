@@ -67,14 +67,14 @@ export default function EditorView() {
   function handleFocus() {
     /* eslint-disable  @typescript-eslint/no-explicit-any */
     const newNavigator: any = window.navigator;
-
     if (newNavigator?.virtualKeyboard) {
+      newNavigator.virtualKeyboard.overlaysContent = true
       newNavigator.virtualKeyboard.show()
     }
   }
 
   return (
-    <div contentEditable className="p-10" onFocus={handleFocus}>
+    <div className="p-10" onClick={handleFocus} onTouchStart={handleFocus} >
       {editor.map(editor.line, (str: string) => {
         return createElement("p", { dangerouslySetInnerHTML: { __html: str } })
       })}
