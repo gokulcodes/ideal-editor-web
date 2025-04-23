@@ -1,4 +1,5 @@
 // import { LineType } from "./types"
+import { ReactNode } from "react";
 import Line from "./Line";
 class Editor {
   line: Line | null;
@@ -52,6 +53,17 @@ class Editor {
     prev.nextLine = next
     next.prevLine = prev;
   }
+
+  map(ptr: Line | null, callback: Function) : Array<ReactNode> {
+    const result: Array<ReactNode> = []
+    while (ptr) {
+      const currLineWords = ptr.map(ptr.letter, ptr, this.linePtr);
+      result.push(callback(currLineWords));
+      ptr = ptr.nextLine;
+    }
+    return result
+  }
+
 }
 
 export default Editor;

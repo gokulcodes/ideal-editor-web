@@ -59,6 +59,19 @@ class Line {
     this.letterPtr = next;
     return next;
   }
+
+
+  map(ptr: Letter | null, itrLine : Line,  activeLine: Line) {
+    let str = ""
+    while (ptr) {
+      str += ptr.text
+      if (this.letterPtr === ptr && activeLine === itrLine) {
+        str += "<span class='animate-cursor w-1 overflow-hidden bg-green-800 text-green-800'>|</span>"
+      }
+      ptr = ptr.nextLetter
+    }
+    return str;
+  }
 }
 
 export default Line;
