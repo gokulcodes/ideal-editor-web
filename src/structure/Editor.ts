@@ -54,7 +54,7 @@ class Editor {
     next.prevLine = prev;
   }
 
-  map(ptr: Line | null, callback: Function) : Array<ReactNode> {
+  map(ptr: Line | null, callback : (lineText : string) => ReactNode) : Array<ReactNode> {
     const result: Array<ReactNode> = []
     while (ptr) {
       const currLineWords = ptr.map(ptr.letter, ptr, this.linePtr);

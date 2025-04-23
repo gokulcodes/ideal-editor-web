@@ -7,7 +7,7 @@ export default function Home() {
   const [state, dispatch] = useReducer(reducer, editorState)
   
   return (
-    <EditorContext.Provider value={{...state, dispatch}} >
+    <EditorContext.Provider value={{state, dispatch}} >
       <EditorView />
     </EditorContext.Provider>
   );

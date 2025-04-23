@@ -5,22 +5,30 @@ export const editorState = {
   editor: new Editor(),
 };
 
-interface ActionType {
+type PayloadType = Editor 
+
+type ActionType = {
   type: string,
-  payload: unknown
+  payload: PayloadType
 }
 
 interface EditorStateType{
   editor: Editor
 }
 
-export const reducer = (state : EditorStateType, action : ActionType) => {
+interface ContextType{
+  state: EditorStateType,
+  dispatch: React.Dispatch<ActionType>
+}
+
+export const reducer = (state : EditorStateType, action : ActionType) : EditorStateType  =>  {
   switch (action.type) {
     case "type":
       return { ...state, editor: action.payload };
   }
+  return state
 };
 
-const editorContext = createContext();
+const editorContext = createContext<ContextType>({state: editorState, dispatch: () => null});
 
 export default editorContext;

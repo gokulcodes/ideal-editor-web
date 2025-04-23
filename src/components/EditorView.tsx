@@ -1,8 +1,8 @@
 import editorContext from "@/controller/editorContext";
-import { createElement, useEffect, useContext, useMemo } from "react";
+import { createElement, useEffect, useContext } from "react";
 export default function EditorView() {
-  const { editor, dispatch } = useContext(editorContext);
-
+  const { state, dispatch } = useContext(editorContext);
+  const editor = state.editor
   useEffect(() => {
     let line = editor.insertLine(editor.linePtr);
     let cursor = line.letterPtr;
@@ -67,12 +67,12 @@ export default function EditorView() {
   return (
     <div className="p-10">
       {editor.map(editor.line, (str: string) => {
-        return <Lines key={str} str={str} />
+        return createElement("p", { dangerouslySetInnerHTML: { __html: str } })
       })}
     </div>
   );
 }
 
-const Lines = (props) => {
-  return useMemo(() => createElement("p", { dangerouslySetInnerHTML: { __html: props.str } }), [props]);
-}
+// const Lines = (props) => {
+//   return useMemo(() => createElement("p", { dangerouslySetInnerHTML: { __html: props.str } }), [props]);
+// }
