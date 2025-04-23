@@ -17,7 +17,7 @@ A minimal, fast, and distraction-free text editor built for the web. Perfect for
 * Search
 
 ## Algorithm
-* Letter & Line storing technique - LinkedList
+* Letter & Line storing technique - N-Array Tree
 
 ```
 class Line{
