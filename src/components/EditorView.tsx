@@ -64,8 +64,12 @@ export default function EditorView() {
     document.addEventListener("keydown", handleKeyDown);
   }, [editor, dispatch]);
 
+  function handleFocus() {
+    navigator.virtualKeyboard.show()
+  }
+
   return (
-    <div className="p-10">
+    <div contentEditable className="p-10" onFocus={handleFocus}>
       {editor.map(editor.line, (str: string) => {
         return createElement("p", { dangerouslySetInnerHTML: { __html: str } })
       })}
