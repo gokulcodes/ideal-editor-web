@@ -1,4 +1,4 @@
-import Editor from "@/structure";
+import Editor from "@/structure/Editor";
 import { createContext } from "react";
 
 export const editorState = {

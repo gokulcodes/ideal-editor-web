@@ -7,8 +7,10 @@ export default function Home() {
   const [state, dispatch] = useReducer(reducer, editorState)
   
   return (
-    <EditorContext.Provider value={{state, dispatch}} >
-      <EditorView />
+    <EditorContext.Provider value={{ state, dispatch }} >
+      {/* <div className="w-full h-[100vh] flex items-start justify-start" > */}
+        <EditorView />
+      {/* </div> */}
     </EditorContext.Provider>
   );
 }

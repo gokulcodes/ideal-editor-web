@@ -1,3 +1,4 @@
+import Editor from "./Editor";
 import Letter from "./Letter";
 // import { LetterType } from "./types";
 
@@ -13,7 +14,8 @@ class Line {
     this.prevLine = null;
   }
 
-  moveLetterPtr(dir : number) {
+  moveLetterPtr(dir: number) {
+    console.log(this.letterPtr)
     if (dir === -1) { // left
       if(this.letterPtr?.prevLetter) this.letterPtr = this.letterPtr?.prevLetter;
       return this.letterPtr;
@@ -23,41 +25,53 @@ class Line {
     return this.letterPtr
   }
 
-  insertLetter(currPtr: Letter | null, val: string): Letter {
+  insertLetter(line : Editor, currPtr: Letter | null, val: string): Letter {
     const newLetter = new Letter(val);
     if (!currPtr) {
       this.letter = newLetter;
       this.letterPtr = this.letter
-      return this.letterPtr
+      return this.letterPtr;
     }
     const nextAvailableLetter = currPtr.nextLetter;
     currPtr.nextLetter = newLetter;
     newLetter.prevLetter = currPtr;
     newLetter.nextLetter = nextAvailableLetter;
     this.letterPtr = newLetter;
+    line.linePtr.letterPtr = this.letterPtr;
+    // this.letterPtr = line.linePtr.letterPtr
     // this.letter.nextLetter = newLetter;
     // newLetter.prevLetter = this.letter;
-    return this.letterPtr
+    return line.linePtr.letterPtr
   }
 
-  deleteLettersFromStartToEnd(start: Letter, end: Letter) : Letter {
+  deleteLettersFromStartToEnd(line : Editor, linePtr: Line, start: Letter, end: Letter) : Letter {
     const prev = start.prevLetter;
     const next = end.nextLetter;
     if (prev == null) {
-      start.nextLetter = next;
-      if (next) next.prevLetter = null;
-      return start;
+      // delete current line and connect the remaining text to previous line's end
+
+      const prevLine = linePtr.prevLine;
+      if (prevLine) {
+        prevLine.letterPtr.nextLetter = next;
+        if (next) next.prevLetter = prevLine.letterPtr.nextLetter;
+        const nextLine = linePtr.nextLine;
+        prevLine.nextLine = nextLine;
+        line.linePtr = prevLine;
+      }
+
+      return line.linePtr.letterPtr;
     }
 
     if (next == null) {
       prev.nextLetter = null;
-      return prev;
+      this.letterPtr = prev;
+      return this.letterPtr;
     }
 
     prev.nextLetter = next
     next.prevLetter = prev;
-    this.letterPtr = next;
-    return next;
+    this.letterPtr = prev;
+    return this.letterPtr;
   }
 
 
@@ -66,7 +80,7 @@ class Line {
     while (ptr) {
       str += ptr.text
       if (this.letterPtr === ptr && activeLine === itrLine) {
-        str += "<span class='animate-cursor w-1 overflow-hidden bg-green-800 text-green-800'>|</span>"
+        str += "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>"
       }
       ptr = ptr.nextLetter
     }
