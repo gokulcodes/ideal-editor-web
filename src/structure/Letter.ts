@@ -1,7 +1,7 @@
 class Letter {
   text : string = "";
   nextLetter : Letter | null;
-  prevLetter : Letter | null;
+  prevLetter: Letter | null;
   constructor(val : string) {
     this.text = val;
     this.nextLetter = null;

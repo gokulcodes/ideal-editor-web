@@ -8,9 +8,7 @@ export default function Home() {
   
   return (
     <EditorContext.Provider value={{ state, dispatch }} >
-      {/* <div className="w-full h-[100vh] flex items-start justify-start" > */}
         <EditorView />
-      {/* </div> */}
     </EditorContext.Provider>
   );
 }

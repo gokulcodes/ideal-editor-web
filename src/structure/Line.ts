@@ -1,90 +1,114 @@
-import Editor from "./Editor";
+import { Cursor } from "./IdealEditor";
 import Letter from "./Letter";
-// import { LetterType } from "./types";
 
 class Line {
-  letter: Letter | null;
-  letterPtr: Letter;
+  lineHead: Letter; // Beginning of the individual line[Don't confuse it with editorHead]
+  lineTail: Letter; // End of the individual line[Don't confuse it with editorTail]
   nextLine: Line | null;
   prevLine: Line | null;
-  constructor()  {
-    this.letter = new Letter('');
-    this.letterPtr = this.letter;
+  constructor() {
+    this.lineHead = new Letter(""); // sentinal letter node
+    this.lineTail = this.lineHead;
     this.nextLine = null;
     this.prevLine = null;
   }
 
-  moveLetterPtr(dir: number) {
-    console.log(this.letterPtr)
-    if (dir === -1) { // left
-      if(this.letterPtr?.prevLetter) this.letterPtr = this.letterPtr?.prevLetter;
-      return this.letterPtr;
-    } 
+  /**
+   * Add a letter next to cursor position
+   * @param cursor 
+   * @param value 
+   */
+  addLetter(cursor: Cursor, value: string) {
+    const newLetter = new Letter(value);
 
-    if(this.letterPtr?.nextLetter) this.letterPtr = this.letterPtr?.nextLetter; 
-    return this.letterPtr
-  }
-
-  insertLetter(line : Editor, currPtr: Letter | null, val: string): Letter {
-    const newLetter = new Letter(val);
-    if (!currPtr) {
-      this.letter = newLetter;
-      this.letterPtr = this.letter
-      return this.letterPtr;
+    const letterPosition = cursor.letterCursor;
+    
+    // letterPosition can never be null because of our sentinal node
+    // Beginning of the line
+    // End of the line
+    // Middle of the line
+    
+    const nextAvailableLetter = letterPosition.nextLetter; // store the next letter pointer for future use
+    letterPosition.nextLetter = newLetter; // point current cursor's next letter to newly created letter
+    newLetter.prevLetter = letterPosition; // point newly created letter's previous pointer to letterPosition
+    newLetter.nextLetter = nextAvailableLetter; // link newLetter's nextLetter to previous next letter pointer
+    if(nextAvailableLetter) nextAvailableLetter.prevLetter = newLetter;
+    if (newLetter.nextLetter == null) {
+      // End of the line
+      cursor.lineCursor.lineTail = newLetter;
     }
-    const nextAvailableLetter = currPtr.nextLetter;
-    currPtr.nextLetter = newLetter;
-    newLetter.prevLetter = currPtr;
-    newLetter.nextLetter = nextAvailableLetter;
-    this.letterPtr = newLetter;
-    line.linePtr.letterPtr = this.letterPtr;
-    // this.letterPtr = line.linePtr.letterPtr
-    // this.letter.nextLetter = newLetter;
-    // newLetter.prevLetter = this.letter;
-    return line.linePtr.letterPtr
+
+    // After adding a new letter, update the cursor position
+    cursor.letterCursor = newLetter;
   }
 
-  deleteLettersFromStartToEnd(line : Editor, linePtr: Line, start: Letter, end: Letter) : Letter {
-    const prev = start.prevLetter;
-    const next = end.nextLetter;
-    if (prev == null) {
-      // delete current line and connect the remaining text to previous line's end
+  /**
+   * Delete's the letter from start to end exclusive
+   * @param startPosition
+   * @param endPosition
+   */
+  deleteLetters(cursor: Cursor, startPosition: Letter, endPosition: Letter) {
+    const prevToStart = startPosition.prevLetter;
+    const nextToEnd = endPosition.nextLetter;
 
-      const prevLine = linePtr.prevLine;
-      if (prevLine) {
-        prevLine.letterPtr.nextLetter = next;
-        if (next) next.prevLetter = prevLine.letterPtr.nextLetter;
-        const nextLine = linePtr.nextLine;
-        prevLine.nextLine = nextLine;
-        line.linePtr = prevLine;
+    /**
+     * What if prevToStart is Sential Node?
+     */
+    if (!prevToStart) {
+      // Sentinal node deletion
+      const nextAvailableLetter = startPosition;
+      const currentLine = cursor.lineCursor;
+      const prevToCurrLine = currentLine.prevLine;
+      const nextToCurrLine = currentLine.nextLine;
+
+      if (!prevToCurrLine) {
+        // If it's editorHead node, don't make any move
+        return;
       }
-
-      return line.linePtr.letterPtr;
+      const prevToCurrLineTail = prevToCurrLine.lineTail
+      prevToCurrLine.lineTail.nextLetter = nextAvailableLetter; // move to remaining letters from currLine to prevLine's tailNode
+      prevToCurrLine.nextLine = nextToCurrLine; // unlink the currLine
+      
+      if (nextAvailableLetter) {
+        // If nextAvailableLetter is available, then only link it to previous line's tailNode
+        // If not, no need to do anything
+        nextAvailableLetter.prevLetter = prevToCurrLineTail;
+      }
+      
+      prevToCurrLine.lineTail = currentLine.lineTail;
+      cursor.lineCursor = prevToCurrLine;
+      cursor.letterCursor = nextAvailableLetter;
+      return;
     }
 
-    if (next == null) {
-      prev.nextLetter = null;
-      this.letterPtr = prev;
-      return this.letterPtr;
+    /**
+     * What if nextToEnd is null?
+     */
+    if (!nextToEnd) {
+      prevToStart.nextLetter = null;
+      cursor.letterCursor = prevToStart;
+      return;
     }
 
-    prev.nextLetter = next
-    next.prevLetter = prev;
-    this.letterPtr = prev;
-    return this.letterPtr;
+    prevToStart.nextLetter = nextToEnd;
+    nextToEnd.prevLetter = prevToStart;
+
+    cursor.letterCursor = prevToStart;
   }
 
-
-  map(ptr: Letter | null, itrLine : Line,  activeLine: Line) {
-    let str = ""
-    while (ptr) {
-      str += ptr.text
-      if (this.letterPtr === ptr && activeLine === itrLine) {
-        str += "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>"
-      }
-      ptr = ptr.nextLetter
+  map(currLine: Line, cursor: Cursor) {
+    let lineText = "";
+    let letterHeadPtr: Letter | null = this.lineHead;
+    
+    while (letterHeadPtr) {
+      if (cursor.lineCursor === currLine && cursor.letterCursor === letterHeadPtr) {
+        lineText += `<span id="activeCursor">${letterHeadPtr.text}</span>`
+        // lineText +=
+        //   "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>";
+      } else lineText += letterHeadPtr.text;
+      letterHeadPtr = letterHeadPtr.nextLetter;
     }
-    return str;
+    return lineText;
   }
 }
 
