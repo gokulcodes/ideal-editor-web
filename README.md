@@ -15,6 +15,7 @@ A minimal, fast, and distraction-free text editor built for the web. Perfect for
 * Code editor mode
 * Notes taking mode
 * Search
+* Virtualized line rendering
 
 ## Algorithm
 * Letter & Line storing technique - N-Array Tree using LinkedList pointers

@@ -21,18 +21,30 @@ export default function EditorView() {
       if (editor.isIgnorableKeys(event)) {
         return;
       }
+
+      if (event.key === "Tab") {
+        cursor.lineCursor.addLetter(cursor, '\t');
+        dispatch({ type: "type", payload: editor });
+        setTimeout(() => {
+          const activeCursor = document.querySelector("#activeCursor");
+          const geometry = activeCursor?.getBoundingClientRect();
+          setGeometry(geometry);
+        }, 0);
+        return;
+      }
       
       function cb() {
         dispatch({ type: "type", payload: editor })
       }
 
       if (editor.isKeyboardShortcut(event)) {
+        console.time('Keyboard Operations');
         editor.handleKeyboardShortcuts(cb, event).then(() => {
           setTimeout(() => {
             const activeCursor = document.querySelector("#activeCursor");
-            console.log(activeCursor)
             const geometry = activeCursor?.getBoundingClientRect();
             setGeometry(geometry);
+            console.timeEnd('Keyboard Operations');
           }, 100)
         })
         return;
@@ -84,11 +96,29 @@ export default function EditorView() {
         setGeometry(geometry);
       }, 0);
     }
+    function handleClick(this: Document, event: MouseEvent) {
+      console.log(event)
+      if (!event || !event.target) {
+        return;
+      }
+      const targetNode = event.target as HTMLElement
+      const parentNode = targetNode.parentNode as HTMLElement;
+      const lineNo = parseInt(parentNode.id.split('_')[1]);
+      const textNo = parseInt(targetNode.id.split('_')[1]);
+      editor.moveCursorToNthLine(lineNo, textNo);
+      dispatch({ type: "type", payload: editor });
+      setTimeout(() => {
+        const activeCursor = document.querySelector("#activeCursor");
+        const geometry = activeCursor?.getBoundingClientRect();
+        setGeometry(geometry);
+      }, 0)
+    }
     const activeCursor = document.querySelector("#activeCursor");
     const geometry = activeCursor?.getBoundingClientRect();
     setGeometry(geometry);
     document.removeEventListener("keydown", handleKeyDown);
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("click", handleClick);
     // window.editor = editor
   }, [editor, cursor,  dispatch]);
   // console.log(geometry)
@@ -106,7 +136,7 @@ export default function EditorView() {
     <div className="p-10 relative cursor-text ">
       {editor.map((htmlString: string, index: number) => (
         <Fragment key={index}>
-          <LineComponent htmlString={htmlString} />
+          <LineComponent lineIndex={index} htmlString={htmlString} />
         </Fragment>
       ))}
       <div
@@ -121,8 +151,9 @@ export default function EditorView() {
   );
 }
 
-const LineComponent = memo((props: { htmlString: string }) =>
+const LineComponent = memo((props: { htmlString: string, lineIndex: number }) =>
   createElement("pre", {
+    id: `line_${props.lineIndex}`,
     className: "h-8 text-xl font-sans",
     dangerouslySetInnerHTML: { __html: props.htmlString },
   })

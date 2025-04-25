@@ -97,18 +97,28 @@ class Line {
   }
 
   map(currLine: Line, cursor: Cursor) {
-    let lineText = "";
+    let lineText = "", cnt = 0;
     let letterHeadPtr: Letter | null = this.lineHead;
-    
     while (letterHeadPtr) {
-      if (cursor.lineCursor === currLine && cursor.letterCursor === letterHeadPtr) {
-        lineText += `<span id="activeCursor">${letterHeadPtr.text}</span>`
+      if (cursor.selectionPointer.includes(letterHeadPtr)) {
+        let selectedText = "";
+        while (letterHeadPtr && cursor.selectionPointer.includes(letterHeadPtr)) {
+          if (cursor.letterCursor === letterHeadPtr) {
+            selectedText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`
+          } else {
+            selectedText += letterHeadPtr.text;
+          }
+          letterHeadPtr = letterHeadPtr.nextLetter;
+        }
+        lineText += `<span class="selectedText"><span id=text_${cnt}>${selectedText}</span></span>`
+        if(letterHeadPtr) letterHeadPtr = letterHeadPtr.prevLetter
+      } else if (cursor.lineCursor === currLine && cursor.letterCursor === letterHeadPtr) {
+        lineText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`
         // lineText +=
         //   "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>";
-      } else if (cursor.lineCursor === currLine && cursor.selectionPointer === letterHeadPtr) { 
-        lineText += `<span id="selectedText">${letterHeadPtr.text}</span>`
-      } else lineText += letterHeadPtr.text;
-      letterHeadPtr = letterHeadPtr.nextLetter;
+      } else lineText += `<span id=text_${cnt}>${letterHeadPtr.text}</span>`;
+      if (letterHeadPtr) letterHeadPtr = letterHeadPtr.nextLetter;
+      cnt++;
     }
     return lineText;
   }

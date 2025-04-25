@@ -9,11 +9,11 @@ import { isLineBreak } from "./editorUtils";
 export class Cursor {
   lineCursor: Line;
   letterCursor: Letter;
-  selectionPointer: Letter | null;
+  selectionPointer: Array<Letter>;
   constructor(linePosition: Line, letterPosition: Letter) {
     this.lineCursor = linePosition;
     this.letterCursor = letterPosition;
-    this.selectionPointer = null;
+    this.selectionPointer = [];
   }
 }
 
@@ -71,6 +71,23 @@ class Editor {
       nthPosition++;
     }
     return nthPosition;
+  }
+
+  moveCursorToNthLine(lineNo: number, textNo: number) {
+    console.log(lineNo, textNo)
+    let linePtr = this.editorHead;
+    while (lineNo--) {
+      if (linePtr.nextLine) linePtr = linePtr.nextLine;
+      else break;
+    }
+    this.cursor.lineCursor = linePtr;
+    let letterPtr = this.cursor.lineCursor.lineHead
+    while (textNo--) {
+      if (letterPtr.nextLetter) letterPtr = letterPtr.nextLetter;
+      else break;
+    }
+    this.cursor.letterCursor = letterPtr;
+    console.log(letterPtr, this.cursor)
   }
 
   moveCursor(keyEvent: KeyboardEvent) {
@@ -162,34 +179,12 @@ class Editor {
         this.cursor.letterCursor = temp1;
         break;
       case "ArrowLeft":
-        if (!this.cursor.letterCursor.prevLetter) {
-          // if there is no previous letter, don't do anything
-          if (this.cursor.lineCursor.prevLine) {
-            this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
-            this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
-          }
-          return;
-        }
-        if (!this.cursor.selectionPointer) {
-          this.cursor.selectionPointer = this.cursor.letterCursor;
-          return;
-        }
-        this.cursor.selectionPointer = this.cursor.selectionPointer.prevLetter;
+        this.cursor.selectionPointer.push(this.cursor.letterCursor);
+        this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowLeft' }));
         break;
       case "ArrowRight":
-        if (!this.cursor.letterCursor.nextLetter) {
-          // if there is no next letter, don't do anything
-          if (this.cursor.lineCursor.nextLine) {
-            this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
-            this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
-          }
-          return;
-        }
-        if (!this.cursor.selectionPointer) {
-          this.cursor.selectionPointer = this.cursor.letterCursor;
-          return;
-        }
-        this.cursor.selectionPointer = this.cursor.selectionPointer.nextLetter;
+        this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowRight' }));
+        this.cursor.selectionPointer.push(this.cursor.letterCursor);
         break;
       default:
         console.log("No action to be performed");
@@ -251,6 +246,9 @@ class Editor {
 
   isKeyboardShortcut(event: KeyboardEvent) {
     if (event.metaKey) {
+      if (event.key == "c") {
+        return true;
+      }
       if (event.key == "v") {
         return true;
       }
@@ -262,6 +260,12 @@ class Editor {
         return true;
       }
       if (event.key === 'ArrowRight') {
+        return true;
+      }
+      if (event.key === 'ArrowUp') {
+        return true;
+      }
+      if (event.key === 'ArrowDown') {
         return true;
       }
     }
@@ -277,13 +281,20 @@ class Editor {
       if (event.metaKey) {
         if (event.key == "c") {
           // copy the selection or line
+          const selectedTextContainer = document.querySelectorAll('.selectedText')
+          let selectedText = "";
+          for (const container of selectedTextContainer) {
+            selectedText += container.textContent + "\n"
+          }
+          navigator.clipboard.writeText(selectedText)
+          cb();
+          resolve("Success");
         } else if (event.key == "v") {
           // paste content from clipboard
           const textContent = await navigator.clipboard.readText();
           console.log(textContent)
           for (const letter of textContent) {
             if (isLineBreak(letter)) {
-              console.log(letter === `\n`)
               this.insertLine();
               continue
             }

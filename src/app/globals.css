@@ -43,6 +43,6 @@ body {
   font-family: "Space Mono", sans-serif
 }
 
-#selectedText{
-  background-color: rgba(0, 128, 0, 0.369);
+.selectedText{
+  background-color: rgba(0, 128, 0, 0.269);
 }
