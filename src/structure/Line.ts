@@ -105,6 +105,8 @@ class Line {
         lineText += `<span id="activeCursor">${letterHeadPtr.text}</span>`
         // lineText +=
         //   "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>";
+      } else if (cursor.lineCursor === currLine && cursor.selectionPointer === letterHeadPtr) { 
+        lineText += `<span id="selectedText">${letterHeadPtr.text}</span>`
       } else lineText += letterHeadPtr.text;
       letterHeadPtr = letterHeadPtr.nextLetter;
     }

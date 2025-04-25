@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Host Grotesk", sans-serif;
+  --font-sans: "Space Mono", sans-serif;
   --animate-cursor: cursorBlink 0.8s infinite;
   @keyframes cursorBlink{
     0%{
@@ -18,7 +18,7 @@
     }
     50%{
       opacity: 0;
-      transform: scaleY(0.9);
+      transform: scaleY(0.8);
       transform-origin: center;
     }
     100%{
@@ -40,5 +40,9 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Host Grotesk", sans-serif
+  font-family: "Space Mono", sans-serif
+}
+
+#selectedText{
+  background-color: rgba(0, 128, 0, 0.369);
 }

@@ -15,9 +15,26 @@ export default function EditorView() {
   const editor = state.editor;
   const cursor = editor.cursor;
 
+  
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (editor.isIgnorableKeys(event)) {
+        return;
+      }
+      
+      function cb() {
+        dispatch({ type: "type", payload: editor })
+      }
+
+      if (editor.isKeyboardShortcut(event)) {
+        editor.handleKeyboardShortcuts(cb, event).then(() => {
+          setTimeout(() => {
+            const activeCursor = document.querySelector("#activeCursor");
+            console.log(activeCursor)
+            const geometry = activeCursor?.getBoundingClientRect();
+            setGeometry(geometry);
+          }, 100)
+        })
         return;
       }
 
@@ -73,7 +90,7 @@ export default function EditorView() {
     document.removeEventListener("keydown", handleKeyDown);
     document.addEventListener("keydown", handleKeyDown);
     // window.editor = editor
-  }, [editor, cursor, dispatch]);
+  }, [editor, cursor,  dispatch]);
   // console.log(geometry)
 
   let cursorLeftPos = 0,
@@ -82,7 +99,7 @@ export default function EditorView() {
   if (geometry) {
     cursorLeftPos = geometry.left + geometry.width;
     cursorTopPos = geometry.top;
-    cursorHeight = geometry.height;
+    cursorHeight = geometry.height + 10;
   }
 
   return (
@@ -96,9 +113,9 @@ export default function EditorView() {
         style={{
           left: `${cursorLeftPos}px`,
           top: `${cursorTopPos}px`,
-          height: `${cursorHeight}px`,
+          height: `${cursorHeight}px`
         }}
-        className="animate-cursor font-sans min-h-5 transform -scale-x-50 absolute w-[0.1px] bg-white mb-0 overflow-hidden tracking-tighter white"
+        className="animate-cursor font-sans min-h-8 transform -scale-x-50 -mt-2 absolute w-[0.8px] bg-green-400 mb-0 overflow-hidden tracking-tighter white"
       />
     </div>
   );
@@ -106,7 +123,7 @@ export default function EditorView() {
 
 const LineComponent = memo((props: { htmlString: string }) =>
   createElement("pre", {
-    className: "h-5 font-sans",
+    className: "h-8 text-xl font-sans",
     dangerouslySetInnerHTML: { __html: props.htmlString },
   })
 );

@@ -7,7 +7,7 @@ export const editorState = {
 
 type PayloadType = Editor 
 
-type ActionType = {
+export type ActionType = {
   type: string,
   payload: PayloadType
 }
