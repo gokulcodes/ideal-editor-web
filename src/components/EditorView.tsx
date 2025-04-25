@@ -97,7 +97,6 @@ export default function EditorView() {
       }, 0);
     }
     function handleClick(this: Document, event: MouseEvent) {
-      console.log(event)
       if (!event || !event.target) {
         return;
       }

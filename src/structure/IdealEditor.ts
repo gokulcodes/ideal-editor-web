@@ -74,7 +74,6 @@ class Editor {
   }
 
   moveCursorToNthLine(lineNo: number, textNo: number) {
-    console.log(lineNo, textNo)
     let linePtr = this.editorHead;
     while (lineNo--) {
       if (linePtr.nextLine) linePtr = linePtr.nextLine;
@@ -87,7 +86,6 @@ class Editor {
       else break;
     }
     this.cursor.letterCursor = letterPtr;
-    console.log(letterPtr, this.cursor)
   }
 
   moveCursor(keyEvent: KeyboardEvent) {
@@ -103,7 +101,6 @@ class Editor {
         while (temp && nextPos--) {
           temp = temp.nextLetter;
         }
-        console.log(temp, nextPos)
         if (!temp) temp = this.cursor.lineCursor.lineTail;
         this.cursor.letterCursor = temp;
         break;
@@ -277,7 +274,6 @@ class Editor {
     event: KeyboardEvent
   ) {
     return new Promise(async (resolve) => {
-      console.log(event);
       if (event.metaKey) {
         if (event.key == "c") {
           // copy the selection or line
@@ -292,7 +288,6 @@ class Editor {
         } else if (event.key == "v") {
           // paste content from clipboard
           const textContent = await navigator.clipboard.readText();
-          console.log(textContent)
           for (const letter of textContent) {
             if (isLineBreak(letter)) {
               this.insertLine();
