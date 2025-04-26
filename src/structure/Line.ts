@@ -1,4 +1,4 @@
-import { Cursor } from "./IdealEditor";
+import Editor, { Cursor } from "./IdealEditor";
 import Letter from "./Letter";
 
 class Line {
@@ -6,11 +6,13 @@ class Line {
   lineTail: Letter; // End of the individual line[Don't confuse it with editorTail]
   nextLine: Line | null;
   prevLine: Line | null;
-  constructor() {
+  lineIndex: number;
+  constructor(lineIndex: number = 0) {
     this.lineHead = new Letter(""); // sentinal letter node
     this.lineTail = this.lineHead;
     this.nextLine = null;
     this.prevLine = null;
+    this.lineIndex = lineIndex
   }
 
   /**
@@ -19,7 +21,7 @@ class Line {
    * @param value 
    */
   addLetter(cursor: Cursor, value: string) {
-    const newLetter = new Letter(value);
+    const newLetter = new Letter(value, cursor.letterCursor.letterIndex + 1);
 
     const letterPosition = cursor.letterCursor;
     
@@ -92,17 +94,17 @@ class Line {
 
     prevToStart.nextLetter = nextToEnd;
     nextToEnd.prevLetter = prevToStart;
-
+    // console.log(prevToStart)
     cursor.letterCursor = prevToStart;
   }
 
-  map(currLine: Line, cursor: Cursor) {
+  map(currLine: Line, cursor: Cursor, editor: Editor) {
     let lineText = "", cnt = 0;
     let letterHeadPtr: Letter | null = this.lineHead;
     while (letterHeadPtr) {
-      if (cursor.selectionPointer.includes(letterHeadPtr)) {
+      if (editor.selectionMode && letterHeadPtr.isSelected) {
         let selectedText = "";
-        while (letterHeadPtr && cursor.selectionPointer.includes(letterHeadPtr)) {
+        while (letterHeadPtr && letterHeadPtr.isSelected) {
           if (cursor.letterCursor === letterHeadPtr) {
             selectedText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`
           } else {

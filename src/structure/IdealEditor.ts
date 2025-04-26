@@ -9,11 +9,26 @@ import { isLineBreak } from "./editorUtils";
 export class Cursor {
   lineCursor: Line;
   letterCursor: Letter;
-  selectionPointer: Array<Letter>;
+  lineNo: number;
+  letterNo: number;
   constructor(linePosition: Line, letterPosition: Letter) {
     this.lineCursor = linePosition;
     this.letterCursor = letterPosition;
-    this.selectionPointer = [];
+    this.lineNo = 0;
+    this.letterNo = 0;
+  }
+}
+
+class SelectionDetails {
+  lineStart: number;
+  lineEnd: number;
+  letterStart: number;
+  letterEnd: number;
+  constructor(lineStart : number, lineEnd: number, letterStart: number, letterEnd: number) {
+    this.lineStart = lineStart;
+    this.lineEnd = lineEnd;
+    this.letterStart = letterStart;
+    this.letterEnd = letterEnd;
   }
 }
 
@@ -21,14 +36,18 @@ class Editor {
   editorHead: Line;
   editorTail: Line;
   cursor: Cursor;
+  selectionMode: boolean;
+  selectionDetails: SelectionDetails;
   constructor() {
     this.editorHead = new Line(); // sential line node
     this.editorTail = this.editorHead;
     this.cursor = new Cursor(this.editorHead, this.editorHead.lineHead);
+    this.selectionMode = false;
+    this.selectionDetails = new SelectionDetails(0,0,0,0);
   }
 
   insertLine() {
-    const newLine = new Line();
+    const newLine = new Line(this.cursor.lineCursor.lineIndex + 1);
 
     // Linked new line next to current cursor line
     const currLine = this.cursor.lineCursor;
@@ -74,6 +93,10 @@ class Editor {
   }
 
   moveCursorToNthLine(lineNo: number, textNo: number) {
+    this.selectionDetails.lineStart = lineNo;
+    this.selectionDetails.lineEnd = lineNo;
+    this.selectionDetails.letterStart = textNo;
+    this.selectionDetails.letterEnd = textNo;
     let linePtr = this.editorHead;
     while (lineNo--) {
       if (linePtr.nextLine) linePtr = linePtr.nextLine;
@@ -88,9 +111,75 @@ class Editor {
     this.cursor.letterCursor = letterPtr;
   }
 
-  moveCursor(keyEvent: KeyboardEvent) {
+  updateLetterSelectionOnMouseMove(startLine: number, endLine: number, startPosition: number, endPosition: number) {
+    // console.log(startLine, endLine, startPosition, endPosition)
+    this.selectionMode = true;
+    let linePtr: Line | null = this.editorHead, lineCnt = 0;
+    while (linePtr) {
+      let head = linePtr.lineHead.nextLetter, letterCnt = 0;
+      while (head) {
+        if (lineCnt == startLine && startLine === endLine) {
+          if (letterCnt >= startPosition && letterCnt <= endPosition) {
+            head.isSelected = true;  
+          }
+        }else if (lineCnt > startLine && lineCnt < endLine) {
+          head.isSelected = true;
+        }else if (lineCnt == startLine && letterCnt >= startPosition) {
+          head.isSelected = true;
+        } else if (lineCnt == endLine && letterCnt <= endPosition) {
+          head.isSelected = true;
+        }
+        head = head.nextLetter;
+        letterCnt++;
+      }
+      lineCnt++;
+      if(linePtr) linePtr = linePtr.nextLine; // this is a problem
+    }
+  }
+
+  moveCursor(keyEvent: KeyboardEvent, isAltKey: boolean = false, isMetaKey: boolean = false) {
     switch (keyEvent.key) {
       case "ArrowUp":
+        if (isAltKey) {
+          // handle line swaps
+          const currLine = this.cursor.lineCursor;
+          const prevLine = currLine.prevLine;
+          const prevPrevLine = prevLine?.prevLine;
+          const nextLine = currLine.nextLine;
+          if (!prevLine) {
+            return;
+          }
+          if (!prevPrevLine) {
+            currLine.prevLine = null;
+            currLine.nextLine = prevLine;
+            prevLine.prevLine = currLine;
+            prevLine.nextLine = nextLine;
+            if(nextLine) nextLine.prevLine = prevLine;
+            this.editorHead = currLine;
+            return;
+          }
+          if (!nextLine) { 
+            prevLine.nextLine = null;
+            prevPrevLine.nextLine = currLine;
+            currLine.prevLine = prevPrevLine;
+            currLine.nextLine = prevLine;
+            prevLine.prevLine = currLine; 
+            this.editorTail = currLine;
+            return;
+          }
+          prevPrevLine.nextLine = currLine;
+          currLine.prevLine = prevPrevLine;
+          currLine.nextLine = prevLine
+          prevLine.prevLine = currLine;
+          prevLine.nextLine = nextLine;
+          nextLine.prevLine = prevLine;
+          this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowDown' }));
+        }
+        if (isMetaKey) {
+          this.cursor.lineCursor = this.editorHead;
+          this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+          return;
+        }
         if (!this.cursor.lineCursor.prevLine) {
           // if there is no prevLine, don't do anything
           return;
@@ -105,6 +194,46 @@ class Editor {
         this.cursor.letterCursor = temp;
         break;
       case "ArrowDown":
+        if (isAltKey) {
+          // handle line swaps
+          const currLine = this.cursor.lineCursor;
+          const prevLine = currLine.prevLine;
+          const nextLine = currLine.nextLine;
+          const nextNextLine = nextLine?.nextLine;
+          if (!nextLine) {
+            return;
+          }
+          if (!nextNextLine) {
+            if(prevLine) prevLine.nextLine = nextLine;
+            nextLine.prevLine = prevLine;
+            nextLine.nextLine = currLine;
+            currLine.prevLine = nextLine;
+            currLine.nextLine = null;
+            this.editorTail = currLine;
+            return;
+          }
+          if (!prevLine) {
+            nextLine.prevLine = null;
+            nextLine.nextLine = currLine
+            currLine.prevLine = nextLine;
+            currLine.nextLine = nextNextLine;
+            nextNextLine.prevLine = currLine;
+            this.editorHead = nextLine;
+            return;
+          }
+          nextNextLine.prevLine = currLine;
+          currLine.nextLine = nextNextLine;
+          currLine.prevLine = nextLine;
+          nextLine.nextLine = currLine;
+          prevLine.nextLine = nextLine;
+          nextLine.prevLine = prevLine;
+          this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowUp' }));
+        }
+        if (isMetaKey) {
+          this.cursor.lineCursor = this.editorTail;
+          this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+          return;
+        }
         if (!this.cursor.lineCursor.nextLine) {
           // if there is no nextLine, don't do anything
           return;
@@ -119,6 +248,32 @@ class Editor {
         this.cursor.letterCursor = temp1;
         break;
       case "ArrowLeft":
+        if (isAltKey) {
+          // find leftmost whitespace / special character and move the cursor to that point
+          let leftWhiteSpace = this.cursor.letterCursor.prevLetter;
+          if (!leftWhiteSpace) {
+            this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowUp' }));
+            this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+            return;
+          }
+          while (leftWhiteSpace) {
+            if (leftWhiteSpace.text === ' ') {
+              break;
+            }
+            leftWhiteSpace = leftWhiteSpace.prevLetter
+          }
+          // console.log(leftWhiteSpace)
+          if (!leftWhiteSpace) {
+            this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+          } else {
+            this.cursor.letterCursor = leftWhiteSpace;
+          }
+          return;
+        }
+        if (isMetaKey) {
+          this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+          return;
+        }
         if (!this.cursor.letterCursor.prevLetter) {
           // if there is no previous letter, don't do anything
           if (this.cursor.lineCursor.prevLine) {
@@ -130,6 +285,33 @@ class Editor {
         this.cursor.letterCursor = this.cursor.letterCursor.prevLetter;
         break;
       case "ArrowRight":
+        if (isAltKey) {
+          // find rightmost whitespace / special character and move the cursor to that point
+          let rightWhiteSpace = this.cursor.letterCursor.nextLetter;
+          if (!rightWhiteSpace) { 
+            this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowDown' }));
+            this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+            return;
+          }
+          while (rightWhiteSpace) {
+            if (rightWhiteSpace.text === ' ') {
+              break;
+            }
+            rightWhiteSpace = rightWhiteSpace.nextLetter
+          }
+          if (!rightWhiteSpace) { 
+            this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+
+          } else {
+            
+            this.cursor.letterCursor = rightWhiteSpace;
+          }
+          return;
+        }
+        if (isMetaKey) {
+          this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+          return;
+        }
         if (!this.cursor.letterCursor.nextLetter) {
           // if there is no next letter, don't do anything
           if (this.cursor.lineCursor.nextLine) {
@@ -140,48 +322,69 @@ class Editor {
         }
         this.cursor.letterCursor = this.cursor.letterCursor.nextLetter;
         break;
+      case "Home":
+        this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+        break;
+      case "End":
+        this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+        break;
       default:
         console.log("No action to be performed");
     }
   }
   
-  moveSelectionPointer(keyEvent: KeyboardEvent) {
+  updateLetterSelection(keyEvent: KeyboardEvent) {
     switch (keyEvent.key) {
       case "ArrowUp":
         if (!this.cursor.lineCursor.prevLine) {
           // if there is no prevLine, don't do anything
           return;
         }
-        let nextPos = this.getCursorPosition();
-        this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
+        let nextPos = this.getCursorPosition() + 1;
+        
+        // this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
         let temp: Letter | null = this.cursor.lineCursor.lineHead;
         while (temp && nextPos--) {
+          temp.isSelected = true;
           temp = temp.nextLetter;
         }
-        if (!temp) temp = this.cursor.lineCursor.lineTail;
-        this.cursor.letterCursor = temp;
+        this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
+        // temp = this.cursor.lineCursor.lineTail;
+        this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
         break;
       case "ArrowDown":
         if (!this.cursor.lineCursor.nextLine) {
           // if there is no nextLine, don't do anything
           return;
         }
-        let prevPos = this.getCursorPosition();
-        this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
+        let prevPos = this.getCursorPosition() + 1;
+        // this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
         let temp1: Letter | null = this.cursor.lineCursor.lineHead;
         while (temp1 && prevPos--) {
+          temp1.isSelected = true;
           temp1 = temp1.nextLetter;
         }
-        if (!temp1) temp1 = this.cursor.lineCursor.lineTail;
-        this.cursor.letterCursor = temp1;
+        this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
+        // temp1 = this.cursor.lineCursor.lineTail;
+        this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
         break;
       case "ArrowLeft":
-        this.cursor.selectionPointer.push(this.cursor.letterCursor);
+        this.selectionMode = true;
+        // if (this.cursor.letterCursor.isSelected) {
+        //   this.selectionDetails.letterEnd -= 1;
+        // } else 
+        this.selectionDetails.letterStart -= 1;
+        this.cursor.letterCursor.isSelected = !this.cursor.letterCursor.isSelected;
         this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowLeft' }));
         break;
       case "ArrowRight":
+        this.selectionMode = true;
+        // if (this.cursor.letterCursor.isSelected) {
+        //   this.selectionDetails.letterStart += 1;
+        // } else 
+        this.selectionDetails.letterEnd += 1;
         this.moveCursor(new KeyboardEvent("keydown", { key: 'ArrowRight' }));
-        this.cursor.selectionPointer.push(this.cursor.letterCursor);
+        this.cursor.letterCursor.isSelected = !this.cursor.letterCursor.isSelected;
         break;
       default:
         console.log("No action to be performed");
@@ -194,7 +397,7 @@ class Editor {
     if (prev == null) {
       start.nextLine = next;
       if (!next) { 
-        this.editorHead = new Line(); // sential line node
+        this.editorHead = new Line(this.cursor.lineCursor.lineIndex + 1); // sential line node
         this.editorTail = this.editorHead;
         this.cursor = new Cursor(this.editorHead, this.editorHead.lineHead);
         return;
@@ -217,12 +420,199 @@ class Editor {
     next.prevLine = prev;
   }
 
+  resetSelection() {
+    this.selectionMode = false;
+    let linePtr: Line | null = this.editorHead;
+    while (linePtr) {
+      let head = linePtr.lineHead.nextLetter;
+      while (head) {
+        if (head.isSelected) head.isSelected = false;
+        head = head.nextLetter;
+      }
+      if(linePtr) linePtr = linePtr.nextLine; // this is a problem
+    }
+  }
+
+  copySelection() {
+    // copy the selection or line
+    const selectedTextContainer = document.querySelectorAll('.selectedText')
+    let selectedText = "";
+    for (const container of selectedTextContainer) {
+      selectedText += container.textContent + "\n"
+    }
+    navigator.clipboard.writeText(selectedText)
+  }
+
+  cutSelection() {
+    let linePtr: Line | null = this.editorHead, copyText = '';
+    // console.log(this.cutSelection)
+    while (linePtr) {
+      // console.log(linePtr)
+      let head = linePtr.lineHead.nextLetter;
+      let start = null, end = null;
+      while (head) {
+        if (head.isSelected) {
+          start = head;
+          break;
+        }
+        head = head.nextLetter;
+      }
+      while (head) {
+        copyText += head.text;
+        end = head;
+        head = head.nextLetter;
+        if (head && !head.isSelected) {
+          break;
+        }
+      }
+      // console.log(start, end);
+      if (start && end) {
+        linePtr.deleteLetters(this.cursor, start, end)
+      }else if (start && end && (start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+        this.deleteLines(linePtr, linePtr);
+      }
+      // if (start && end) {
+      //   if ((start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+      //     this.deleteLines(linePtr, linePtr);
+      //     if(linePtr) linePtr = linePtr.nextLine;
+      //     continue;
+      //   }
+      //   const prevLetter = start?.prevLetter;
+      //   if (prevLetter) {
+      //     // console.log(start, prevLetter);
+      //     prevLetter.nextLetter = end.nextLetter;
+      //     end.prevLetter = prevLetter;
+      //     this.cursor.letterCursor = prevLetter;
+      //   }
+      //   // if (!end.nextLetter) {
+      //   //   linePtr.lineTail = prevLetter;
+      //   // }
+      //   // if (!start.prevLetter) {
+      //   //   linePtr.lineHead = end.nextLetter;
+      //   // }
+      // }
+      if(linePtr) linePtr = linePtr.nextLine; // this is a problem
+    }
+    navigator.clipboard.writeText(copyText)
+  }
+
+  async pasteOnSelection() {
+    let linePtr : Line | null = this.editorHead;
+    let textContent = await navigator.clipboard.readText();
+    while (linePtr) {
+      // console.log(linePtr)
+      let head = linePtr.lineHead.nextLetter;
+      let start = null, end = null;
+      while (head) {
+        if (head.isSelected) {
+          start = head;
+          break;
+        }
+        head = head.nextLetter;
+      }
+      while (head) {
+        end = head;
+        head = head.nextLetter;
+        if (head && !head.isSelected) {
+          break;
+        }
+      }
+      // console.log(start, end);
+      if (start && end) {
+        linePtr.deleteLetters(this.cursor, start, end);
+      }else if (start && end && (start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+        this.deleteLines(linePtr, linePtr);
+      }
+      for (const letter of textContent) {
+        if (isLineBreak(letter)) {
+          this.insertLine();
+          continue
+        }
+        // console.log(letter)
+        this.cursor.lineCursor.addLetter(this.cursor, letter);
+      }
+      textContent = "";
+      // if (start && end) {
+      //   if ((start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+      //     this.deleteLines(linePtr, linePtr);
+      //     if(linePtr) linePtr = linePtr.nextLine;
+      //     continue;
+      //   }
+      //   const prevLetter = start?.prevLetter;
+      //   if (prevLetter) {
+      //     // console.log(start, prevLetter);
+      //     prevLetter.nextLetter = end.nextLetter;
+      //     end.prevLetter = prevLetter;
+      //     this.cursor.letterCursor = prevLetter;
+      //   }
+      //   // if (!end.nextLetter) {
+      //   //   linePtr.lineTail = prevLetter;
+      //   // }
+      //   // if (!start.prevLetter) {
+      //   //   linePtr.lineHead = end.nextLetter;
+      //   // }
+      // }
+      if(linePtr) linePtr = linePtr.nextLine; // this is a problem
+    }
+    
+  }
+
+  deleteSelection() {
+    let linePtr : Line | null = this.editorHead;
+    while (linePtr) {
+      // console.log(linePtr)
+      let head = linePtr.lineHead.nextLetter;
+      let start = null, end = null;
+      while (head) {
+        if (head.isSelected) {
+          start = head;
+          break;
+        }
+        head = head.nextLetter;
+      }
+      while (head) {
+        end = head;
+        head = head.nextLetter;
+        if (head && !head.isSelected) {
+          break;
+        }
+      }
+      // console.log(start, end);
+      if (start && end) {
+        linePtr.deleteLetters(this.cursor, start, end)
+      }else if (start && end && (start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+        this.deleteLines(linePtr, linePtr);
+      }
+      // if (start && end) {
+      //   if ((start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
+      //     this.deleteLines(linePtr, linePtr);
+      //     if(linePtr) linePtr = linePtr.nextLine;
+      //     continue;
+      //   }
+      //   const prevLetter = start?.prevLetter;
+      //   if (prevLetter) {
+      //     // console.log(start, prevLetter);
+      //     prevLetter.nextLetter = end.nextLetter;
+      //     end.prevLetter = prevLetter;
+      //     this.cursor.letterCursor = prevLetter;
+      //   }
+      //   // if (!end.nextLetter) {
+      //   //   linePtr.lineTail = prevLetter;
+      //   // }
+      //   // if (!start.prevLetter) {
+      //   //   linePtr.lineHead = end.nextLetter;
+      //   // }
+      // }
+      if(linePtr) linePtr = linePtr.nextLine; // this is a problem
+    }
+  }
+
   map(cb: (lineText: string, index: number) => ReactNode): Array<ReactNode> {
     const renderedLines: Array<ReactNode> = [];
     let editorHeadPtr: Line | null = this.editorHead;
 
     while (editorHeadPtr) {
-      const currLineText = editorHeadPtr.map(editorHeadPtr, this.cursor);
+      const currLineText = editorHeadPtr.map(editorHeadPtr, this.cursor, this);
       const htmlRenderedLine = cb(currLineText, renderedLines.length);
       renderedLines.push(htmlRenderedLine);
       editorHeadPtr = editorHeadPtr.nextLine;
@@ -252,6 +642,12 @@ class Editor {
       if (event.key == "x") {
         return true;
       }
+      if (this.isCursorMoveEvent(event)) {
+        return true;
+      }
+      if (event.key === 'a') {
+        return true
+      }
     } else if (event.shiftKey) {
       if (event.key === 'ArrowLeft') {
         return true;
@@ -265,6 +661,14 @@ class Editor {
       if (event.key === 'ArrowDown') {
         return true;
       }
+    } else if (event.key === "Home") {
+      return true
+    } else if (event.key === "End") {
+      return true
+    } else if (event.altKey) {
+      if (this.isCursorMoveEvent(event)) {
+        return true;
+      }
     }
     return false;
   }
@@ -276,17 +680,17 @@ class Editor {
     return new Promise(async (resolve) => {
       if (event.metaKey) {
         if (event.key == "c") {
-          // copy the selection or line
-          const selectedTextContainer = document.querySelectorAll('.selectedText')
-          let selectedText = "";
-          for (const container of selectedTextContainer) {
-            selectedText += container.textContent + "\n"
-          }
-          navigator.clipboard.writeText(selectedText)
+          this.copySelection();
           cb();
           resolve("Success");
         } else if (event.key == "v") {
           // paste content from clipboard
+          if (this.selectionMode) {
+            await this.pasteOnSelection();
+            cb();
+            resolve("Success");
+            return;
+          }
           const textContent = await navigator.clipboard.readText();
           for (const letter of textContent) {
             if (isLineBreak(letter)) {
@@ -298,6 +702,12 @@ class Editor {
           cb();
           resolve("Success");
         } else if (event.key == 'x') {
+          if (this.selectionMode) {
+            this.cutSelection();
+            cb();
+            resolve("Success");
+            return;
+          }
           let currLineHead : Letter | null = this.cursor.lineCursor.lineHead;
           let text = '';
           while (currLineHead) {
@@ -308,13 +718,29 @@ class Editor {
           this.deleteLines(this.cursor.lineCursor, this.cursor.lineCursor)
           cb();
           resolve("Success");
+        } else if (this.isCursorMoveEvent(event)) {
+          this.moveCursor(event, event.altKey, event.metaKey);
+          cb();
+          resolve("Success");
+        } else if (event.key === 'a') {
+          this.updateLetterSelectionOnMouseMove(0, 1000, 0, 100)
+          cb();
+          resolve("Success");
         }
       } else if (event.shiftKey) {
         if (this.isCursorMoveEvent(event)) {
-          this.moveSelectionPointer(event);
+          this.updateLetterSelection(event);
         }
         cb();
         resolve('success')
+      } else if (event.key === 'Home' || event.key === "End") {
+        this.moveCursor(event)
+        cb();
+        resolve("Success");
+      } else if (event.altKey) {
+        this.moveCursor(event, event.altKey, event.metaKey);
+        cb();
+        resolve("Success");
       }
     });
   }
