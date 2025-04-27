@@ -122,7 +122,9 @@ class Editor {
 		startPosition: number,
 		endPosition: number
 	) {
-		// console.log(startLine, endLine, startPosition, endPosition)
+		startPosition -= 1
+		endPosition -= 1;
+		// console.log(startLine, endLine)
 		this.selectionMode = true;
 		let linePtr: Line | null = this.editorHead,
 			lineCnt = 0;
@@ -130,14 +132,14 @@ class Editor {
 			let head = linePtr.lineHead.nextLetter,
 				letterCnt = 0;
 			while (head) {
-				if (lineCnt == startLine && startLine === endLine) {
-					if (
+				if (startLine === endLine) {
+					if (lineCnt == startLine && 
 						letterCnt >= startPosition &&
 						letterCnt <= endPosition
 					) {
 						head.isSelected = true;
 					}
-				} else if (lineCnt > startLine && lineCnt < endLine) {
+				}else if (lineCnt > startLine && lineCnt < endLine) {
 					head.isSelected = true;
 				} else if (lineCnt == startLine && letterCnt >= startPosition) {
 					head.isSelected = true;
@@ -157,6 +159,9 @@ class Editor {
 		isAltKey: boolean = false,
 		isMetaKey: boolean = false
 	) {
+		if (!keyEvent.shiftKey) {
+			this.resetSelection(); // reset selection on direction key's when shift key is not pressed
+		}
 		switch (keyEvent.key) {
 			case 'ArrowUp':
 				if (isAltKey) {
@@ -403,27 +408,68 @@ class Editor {
 				break;
 			case 'ArrowLeft':
 				this.selectionMode = true;
-				// if (this.cursor.letterCursor.isSelected) {
-				//   this.selectionDetails.letterEnd -= 1;
-				// } else
-				this.selectionDetails.letterStart -= 1;
-				this.cursor.letterCursor.isSelected =
-					!this.cursor.letterCursor.isSelected;
-				this.moveCursor(
-					new KeyboardEvent('keydown', { key: 'ArrowLeft' })
-				);
+				if (keyEvent.altKey) {
+					if (this.cursor.letterCursor.text === ' ') {
+						this.cursor.letterCursor.isSelected =
+							!this.cursor.letterCursor.isSelected;
+						this.moveCursor(
+							new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+						);
+					}
+					while (this.cursor.letterCursor.text !== ' ') {
+						this.cursor.letterCursor.isSelected =
+							!this.cursor.letterCursor.isSelected;
+						this.moveCursor(
+							new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+						);
+						if (this.cursor.letterCursor.text === '') {
+							break;
+						}
+					}
+				} else {
+					
+					// if (this.cursor.letterCursor.isSelected) {
+					//   this.selectionDetails.letterEnd -= 1;
+					// } else
+					this.selectionDetails.letterStart -= 1;
+					this.cursor.letterCursor.isSelected =
+						!this.cursor.letterCursor.isSelected;
+					this.moveCursor(
+						new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+					);
+				}
 				break;
 			case 'ArrowRight':
-				this.selectionMode = true;
-				// if (this.cursor.letterCursor.isSelected) {
-				//   this.selectionDetails.letterStart += 1;
-				// } else
-				this.selectionDetails.letterEnd += 1;
-				this.moveCursor(
-					new KeyboardEvent('keydown', { key: 'ArrowRight' })
-				);
-				this.cursor.letterCursor.isSelected =
-					!this.cursor.letterCursor.isSelected;
+				if (keyEvent.altKey) {
+					if (this.cursor.letterCursor.text === ' ') {
+						this.moveCursor(
+							new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+						);
+						this.cursor.letterCursor.isSelected =
+							!this.cursor.letterCursor.isSelected;
+					}
+					while (this.cursor.letterCursor.text !== ' ') {
+						this.moveCursor(
+							new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+						);
+						this.cursor.letterCursor.isSelected =
+							!this.cursor.letterCursor.isSelected;
+						if (this.cursor.letterCursor.text === '') {
+							break;
+						}
+					}
+				} else {
+					this.selectionMode = true;
+					// if (this.cursor.letterCursor.isSelected) {
+					//   this.selectionDetails.letterStart += 1;
+					// } else
+					this.selectionDetails.letterEnd += 1;
+					this.moveCursor(
+						new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+					);
+					this.cursor.letterCursor.isSelected =
+						!this.cursor.letterCursor.isSelected;
+				}
 				break;
 			default:
 				console.log('No action to be performed');

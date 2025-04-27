@@ -112,11 +112,12 @@ class Line {
 					if (cursor.letterCursor === letterHeadPtr) {
 						selectedText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
 					} else {
-						selectedText += letterHeadPtr.text;
+						selectedText += `<span id=text_${cnt}>${letterHeadPtr.text}</span>`;
 					}
 					letterHeadPtr = letterHeadPtr.nextLetter;
+					cnt++;
 				}
-				lineText += `<span class="selectedText"><span id=text_${cnt}>${selectedText}</span></span>`;
+				lineText += `<span class="selectedText">${selectedText}</span>`;
 				if (letterHeadPtr) letterHeadPtr = letterHeadPtr.prevLetter;
 			} else if (
 				cursor.lineCursor === currLine &&
