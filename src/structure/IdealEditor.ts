@@ -306,6 +306,14 @@ class Editor {
 					return;
 				}
 				if (isMetaKey) {
+					if (keyEvent.shiftKey) {
+						this.selectionMode = true;
+						let temp : Letter | null = this.cursor.letterCursor;
+						while (temp) {
+							temp.isSelected = true;
+							if(temp) temp = temp.prevLetter;
+						}
+					}
 					this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
 					return;
 				}
@@ -348,6 +356,14 @@ class Editor {
 					return;
 				}
 				if (isMetaKey) {
+					if (keyEvent.shiftKey) {
+						this.selectionMode = true;
+						let temp : Letter | null = this.cursor.letterCursor;
+						while (temp) {
+							temp.isSelected = true;
+							if(temp) temp = temp.nextLetter;
+						}
+					}
 					this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
 					return;
 				}
@@ -792,6 +808,9 @@ class Editor {
 			if (event.key === 'z') {
 				return true;
 			}
+			if (event.key === 'Backspace') {
+				return true;
+			}
 		} else if (event.shiftKey) {
 			if (event.key === 'ArrowLeft') {
 				return true;
@@ -905,6 +924,15 @@ class Editor {
 					this.handleTimeTravel(event);
 					cb();
 					resolve('success');
+				} else if (event.key === 'Backspace') {
+					// delete the entire line
+					const line = this.cursor.lineCursor;
+					line.lineHead.nextLetter = line.lineTail.nextLetter
+					line.lineTail.prevLetter = line.lineHead;
+					line.lineTail = line.lineHead;
+					this.cursor.letterCursor = line.lineHead;
+					cb();
+					resolve('success');
 				}
 			} else if (event.shiftKey) {
 				if (this.isCursorMoveEvent(event)) {
@@ -917,21 +945,29 @@ class Editor {
 				cb();
 				resolve('Success');
 			} else if (event.altKey) {
-				if (event.key === 'Backspace') { // delete letters between white space
+				if (event.key === 'Backspace') {
+					// delete letters between white space
 					let leftWhiteSpace = this.cursor.letterCursor;
 					while (leftWhiteSpace && leftWhiteSpace.text !== '') {
 						if (leftWhiteSpace.prevLetter) {
 							leftWhiteSpace = leftWhiteSpace.prevLetter;
 						}
 						if (!leftWhiteSpace) break;
-						if (leftWhiteSpace.text === '' || leftWhiteSpace.text === ' ') {
+						if (
+							leftWhiteSpace.text === '' ||
+							leftWhiteSpace.text === ' '
+						) {
 							if (leftWhiteSpace.nextLetter) {
-								leftWhiteSpace = leftWhiteSpace.nextLetter
+								leftWhiteSpace = leftWhiteSpace.nextLetter;
 							}
 							break;
 						}
 					}
-					this.cursor.lineCursor.deleteLetters(this.cursor, leftWhiteSpace, this.cursor.letterCursor);
+					this.cursor.lineCursor.deleteLetters(
+						this.cursor,
+						leftWhiteSpace,
+						this.cursor.letterCursor
+					);
 					cb();
 					resolve('Success');
 					return;

@@ -77,12 +77,12 @@ class Line {
 			if (nextToCurrLine) {
 				nextToCurrLine.prevLine = prevToCurrLine;
 			}
-			
+
 			if (nextAvailableLetter) {
 				// If nextAvailableLetter is available, then only link it to previous line's tailNode
 				// If not, no need to do anything
 				nextAvailableLetter.prevLetter = prevToCurrLineTail;
-			} 
+			}
 
 			prevToCurrLine.lineTail = nextAvailableLetter;
 			cursor.lineCursor = prevToCurrLine;
