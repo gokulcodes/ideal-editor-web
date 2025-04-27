@@ -43,12 +43,14 @@ class Editor {
 	cursor: Cursor;
 	selectionMode: boolean;
 	selectionDetails: SelectionDetails;
+	undoRedoBuffer: Array<Editor>;
 	constructor() {
 		this.editorHead = new Line(); // sential line node
 		this.editorTail = this.editorHead;
 		this.cursor = new Cursor(this.editorHead, this.editorHead.lineHead);
 		this.selectionMode = false;
 		this.selectionDetails = new SelectionDetails(0, 0, 0, 0);
+		this.undoRedoBuffer = [];
 	}
 
 	insertLine() {
@@ -122,7 +124,7 @@ class Editor {
 		startPosition: number,
 		endPosition: number
 	) {
-		startPosition -= 1
+		startPosition -= 1;
 		endPosition -= 1;
 		// console.log(startLine, endLine)
 		this.selectionMode = true;
@@ -133,13 +135,14 @@ class Editor {
 				letterCnt = 0;
 			while (head) {
 				if (startLine === endLine) {
-					if (lineCnt == startLine && 
+					if (
+						lineCnt == startLine &&
 						letterCnt >= startPosition &&
 						letterCnt <= endPosition
 					) {
 						head.isSelected = true;
 					}
-				}else if (lineCnt > startLine && lineCnt < endLine) {
+				} else if (lineCnt > startLine && lineCnt < endLine) {
 					head.isSelected = true;
 				} else if (lineCnt == startLine && letterCnt >= startPosition) {
 					head.isSelected = true;
@@ -413,21 +416,26 @@ class Editor {
 						this.cursor.letterCursor.isSelected =
 							!this.cursor.letterCursor.isSelected;
 						this.moveCursor(
-							new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+							new KeyboardEvent('keydown', {
+								key: 'ArrowLeft',
+								shiftKey: true,
+							})
 						);
 					}
 					while (this.cursor.letterCursor.text !== ' ') {
 						this.cursor.letterCursor.isSelected =
 							!this.cursor.letterCursor.isSelected;
 						this.moveCursor(
-							new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+							new KeyboardEvent('keydown', {
+								key: 'ArrowLeft',
+								shiftKey: true,
+							})
 						);
 						if (this.cursor.letterCursor.text === '') {
 							break;
 						}
 					}
 				} else {
-					
 					// if (this.cursor.letterCursor.isSelected) {
 					//   this.selectionDetails.letterEnd -= 1;
 					// } else
@@ -435,22 +443,32 @@ class Editor {
 					this.cursor.letterCursor.isSelected =
 						!this.cursor.letterCursor.isSelected;
 					this.moveCursor(
-						new KeyboardEvent('keydown', { key: 'ArrowLeft', shiftKey: true })
+						new KeyboardEvent('keydown', {
+							key: 'ArrowLeft',
+							shiftKey: true,
+						})
 					);
 				}
 				break;
 			case 'ArrowRight':
+				this.selectionMode = true;
 				if (keyEvent.altKey) {
 					if (this.cursor.letterCursor.text === ' ') {
 						this.moveCursor(
-							new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+							new KeyboardEvent('keydown', {
+								key: 'ArrowRight',
+								shiftKey: true,
+							})
 						);
 						this.cursor.letterCursor.isSelected =
 							!this.cursor.letterCursor.isSelected;
 					}
 					while (this.cursor.letterCursor.text !== ' ') {
 						this.moveCursor(
-							new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+							new KeyboardEvent('keydown', {
+								key: 'ArrowRight',
+								shiftKey: true,
+							})
 						);
 						this.cursor.letterCursor.isSelected =
 							!this.cursor.letterCursor.isSelected;
@@ -465,7 +483,10 @@ class Editor {
 					// } else
 					this.selectionDetails.letterEnd += 1;
 					this.moveCursor(
-						new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+						new KeyboardEvent('keydown', {
+							key: 'ArrowRight',
+							shiftKey: true,
+						})
 					);
 					this.cursor.letterCursor.isSelected =
 						!this.cursor.letterCursor.isSelected;
@@ -768,6 +789,9 @@ class Editor {
 			if (event.key === 'a') {
 				return true;
 			}
+			if (event.key === 'z') {
+				return true;
+			}
 		} else if (event.shiftKey) {
 			if (event.key === 'ArrowLeft') {
 				return true;
@@ -781,6 +805,9 @@ class Editor {
 			if (event.key === 'ArrowDown') {
 				return true;
 			}
+			if (event.key === 'z') {
+				return true;
+			}
 		} else if (event.key === 'Home') {
 			return true;
 		} else if (event.key === 'End') {
@@ -789,8 +816,35 @@ class Editor {
 			if (this.isCursorMoveEvent(event)) {
 				return true;
 			}
+			if (event.key === 'Backspace') {
+				return true;
+			}
 		}
 		return false;
+	}
+
+	handleTimeTravel(event: KeyboardEvent) {
+		if (!this.undoRedoBuffer || !this.undoRedoBuffer.length) {
+			console.log('undo/redo buffer empty');
+			return;
+		}
+		if (event.shiftKey) {
+			// handle redo
+			return;
+		}
+		// undo
+		const previousEditorRef = this.undoRedoBuffer.at(-1);
+		if (!previousEditorRef) {
+			return;
+		}
+
+		this.editorHead = previousEditorRef.editorHead;
+		this.editorTail = previousEditorRef.editorTail;
+		this.cursor = previousEditorRef.cursor;
+		this.cursor = previousEditorRef.cursor;
+		this.selectionMode = previousEditorRef.selectionMode;
+		this.selectionDetails = previousEditorRef.selectionDetails;
+		this.undoRedoBuffer = previousEditorRef.undoRedoBuffer;
 	}
 
 	async handleKeyboardShortcuts(cb: () => void, event: KeyboardEvent) {
@@ -847,6 +901,10 @@ class Editor {
 					this.updateLetterSelectionOnMouseMove(0, 1000, 0, 100);
 					cb();
 					resolve('Success');
+				} else if (event.key === 'z') {
+					this.handleTimeTravel(event);
+					cb();
+					resolve('success');
 				}
 			} else if (event.shiftKey) {
 				if (this.isCursorMoveEvent(event)) {
@@ -859,6 +917,25 @@ class Editor {
 				cb();
 				resolve('Success');
 			} else if (event.altKey) {
+				if (event.key === 'Backspace') { // delete letters between white space
+					let leftWhiteSpace = this.cursor.letterCursor;
+					while (leftWhiteSpace && leftWhiteSpace.text !== '') {
+						if (leftWhiteSpace.prevLetter) {
+							leftWhiteSpace = leftWhiteSpace.prevLetter;
+						}
+						if (!leftWhiteSpace) break;
+						if (leftWhiteSpace.text === '' || leftWhiteSpace.text === ' ') {
+							if (leftWhiteSpace.nextLetter) {
+								leftWhiteSpace = leftWhiteSpace.nextLetter
+							}
+							break;
+						}
+					}
+					this.cursor.lineCursor.deleteLetters(this.cursor, leftWhiteSpace, this.cursor.letterCursor);
+					cb();
+					resolve('Success');
+					return;
+				}
 				this.moveCursor(event, event.altKey, event.metaKey);
 				cb();
 				resolve('Success');

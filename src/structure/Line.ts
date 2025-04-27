@@ -72,15 +72,19 @@ class Line {
 			}
 			const prevToCurrLineTail = prevToCurrLine.lineTail;
 			prevToCurrLine.lineTail.nextLetter = nextAvailableLetter; // move to remaining letters from currLine to prevLine's tailNode
+			prevToCurrLine.lineTail = nextAvailableLetter;
 			prevToCurrLine.nextLine = nextToCurrLine; // unlink the currLine
-
+			if (nextToCurrLine) {
+				nextToCurrLine.prevLine = prevToCurrLine;
+			}
+			
 			if (nextAvailableLetter) {
 				// If nextAvailableLetter is available, then only link it to previous line's tailNode
 				// If not, no need to do anything
 				nextAvailableLetter.prevLetter = prevToCurrLineTail;
-			}
+			} 
 
-			prevToCurrLine.lineTail = currentLine.lineTail;
+			prevToCurrLine.lineTail = nextAvailableLetter;
 			cursor.lineCursor = prevToCurrLine;
 			cursor.letterCursor = nextAvailableLetter;
 			return;

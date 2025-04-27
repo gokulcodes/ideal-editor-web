@@ -1,4 +1,5 @@
 import editorContext from '@/controller/editorContext';
+// import { deepCopy } from '@/structure/editorUtils';
 import React, {
 	createElement,
 	useEffect,
@@ -12,7 +13,7 @@ import React, {
 export default function EditorView() {
 	// const inputRef = useRef(null);
 	const { state, dispatch } = useContext(editorContext);
-	const [isDragging, setIsDragging] = useState(false)
+	const [isDragging, setIsDragging] = useState(false);
 	const [geometry, setGeometry] = useState<DOMRect>();
 	const mouseDown = useRef<React.MouseEvent<HTMLDivElement> | null>(null);
 	const editor = state.editor;
@@ -100,6 +101,15 @@ export default function EditorView() {
 			}
 
 			cursor.lineCursor.addLetter(cursor, event.key);
+			// if (editor.undoRedoBuffer.length == 0) {
+			// 	editor.undoRedoBuffer.push(deepCopy(editor));
+			// }
+			// if (editor.undoRedoBuffer.length > 4) {
+			// 	editor.undoRedoBuffer.shift()
+			// }
+			// if (event.key === ' ') {
+			// 	editor.undoRedoBuffer.push(deepCopy(editor));
+			// }
 			dispatch({ type: 'type', payload: editor });
 
 			setTimeout(() => {
@@ -152,7 +162,7 @@ export default function EditorView() {
 
 	// function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
 	// }
-	
+
 	function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
 		// if (isDragging) {
 		// 	console.log(event.target)
@@ -166,21 +176,21 @@ export default function EditorView() {
 		const mouseUpPosition = parseInt(mouseUpTarget.id?.split('_')?.[1]);
 		let lineStart = 0,
 			lineEnd = 0;
-	
+
 		if (!mouseDownTarget.parentNode) {
 			lineStart = parseInt(mouseDownTarget.id.split('_')?.[1]);
 		} else if (mouseDownTarget.parentNode) {
 			const parentNode = mouseDownTarget.parentNode as HTMLDivElement;
 			lineStart = parseInt(parentNode.id.split('_')?.[1]);
 		}
-	
+
 		if (!mouseUpTarget.parentNode) {
 			lineEnd = parseInt(mouseUpTarget.id.split('_')?.[1]);
 		} else if (mouseUpTarget.parentNode) {
 			const parentNode = mouseUpTarget.parentNode as HTMLDivElement;
 			lineEnd = parseInt(parentNode.id.split('_')?.[1]);
 		}
-	
+
 		if (mouseDownPosition != mouseUpPosition) {
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
@@ -200,9 +210,14 @@ export default function EditorView() {
 
 	return (
 		<div
-			onMouseDown={(event) => { (mouseDown.current = event); setIsDragging(true) }}
+			onMouseDown={(event) => {
+				mouseDown.current = event;
+				setIsDragging(true);
+			}}
 			onMouseMove={(event) => handleMouseMove(event)}
-			onMouseUp={() => { setIsDragging(false)}}
+			onMouseUp={() => {
+				setIsDragging(false);
+			}}
 			className="p-10 relative select-none cursor-text "
 		>
 			{editor.map((htmlString: string, index: number) => (
