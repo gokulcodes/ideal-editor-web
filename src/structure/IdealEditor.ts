@@ -308,10 +308,10 @@ class Editor {
 				if (isMetaKey) {
 					if (keyEvent.shiftKey) {
 						this.selectionMode = true;
-						let temp : Letter | null = this.cursor.letterCursor;
+						let temp: Letter | null = this.cursor.letterCursor;
 						while (temp) {
 							temp.isSelected = true;
-							if(temp) temp = temp.prevLetter;
+							if (temp) temp = temp.prevLetter;
 						}
 					}
 					this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
@@ -358,10 +358,10 @@ class Editor {
 				if (isMetaKey) {
 					if (keyEvent.shiftKey) {
 						this.selectionMode = true;
-						let temp : Letter | null = this.cursor.letterCursor;
+						let temp: Letter | null = this.cursor.letterCursor;
 						while (temp) {
 							temp.isSelected = true;
-							if(temp) temp = temp.nextLetter;
+							if (temp) temp = temp.nextLetter;
 						}
 					}
 					this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
@@ -479,6 +479,7 @@ class Editor {
 						this.cursor.letterCursor.isSelected =
 							!this.cursor.letterCursor.isSelected;
 					}
+
 					while (this.cursor.letterCursor.text !== ' ') {
 						this.moveCursor(
 							new KeyboardEvent('keydown', {
@@ -927,7 +928,7 @@ class Editor {
 				} else if (event.key === 'Backspace') {
 					// delete the entire line
 					const line = this.cursor.lineCursor;
-					line.lineHead.nextLetter = line.lineTail.nextLetter
+					line.lineHead.nextLetter = line.lineTail.nextLetter;
 					line.lineTail.prevLetter = line.lineHead;
 					line.lineTail = line.lineHead;
 					this.cursor.letterCursor = line.lineHead;
