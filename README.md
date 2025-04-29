@@ -113,7 +113,26 @@ Special keyboard actions
 - Cmd + Right / Home
     - Move to end of the whole line
 - Tabs
-
     - Insert a tab space from the cursor point
+- Single Line Range Selection using Keyboard
+- [Copy]Single Line Range Selection using Keyboard
+- [Copy]Multiline selection using Keyboard
+- [Paste/Replace]Single Line Range Selection using Keyboard
+- [Delete]Single Line Range Selection using Keyboard
+- [Cmd + A] Select all lines from start to end
+- [Shift + Alt + Left] Select all letters to left of the cursor until a space is seen
+- [Shift + Alt + Right] Select all letters to Right of the cursor until a space is seen
+- [Alt + Left] Move the cursor to previous whitespace
+- [Alt + Right] Move the cursor to next whitespace
+- [Alt + Up] Swap current line to previous line
+- [Alt + Down] Swap current line to next line
+- [Cmd + Up] Move the cursor to first line of the entire editor
+- [Cmd + Down] Move the cursor to last line of the entire editor
+- [Cmd + Left] Move the cursor to beginning of the line
+- [Cmd + Right] Move the cursor to end of the line
+- [Cmd + Up] Move the cursor to first line of the entire editor
+- [Cmd + Down] Move the cursor to last line of the entire editor
+- [Home] Move the cursor to beginning of the current line
+- [End] Move the cursor to end of the current line
 
 - Only allow AlphaNumeric, Special Characters & Emojis inside editor view

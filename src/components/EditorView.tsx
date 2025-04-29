@@ -18,6 +18,7 @@ export default function EditorView() {
 	const mouseDown = useRef<React.MouseEvent<HTMLDivElement> | null>(null);
 	const editor = state.editor;
 	const cursor = editor.cursor;
+	const cursorRef = useRef(null)
 
 	useEffect(() => {
 		function handleKeyDown(event: KeyboardEvent) {
@@ -151,13 +152,34 @@ export default function EditorView() {
 		// window.editor = editor;
 	}, [editor, cursor, dispatch]);
 
+	function cursorListener() {
+		const editorRef = document.getElementById('editor');
+		function handleCursorVisibility(entries: IntersectionObserverEntry[]) {
+			entries.forEach((entry) => {
+				if (!entry.isIntersecting) {
+					console.log(entry.isIntersecting)
+					editorRef?.scrollBy({top: 32, behavior: "smooth"})
+				}
+			})
+		}
+		const observer = new IntersectionObserver(handleCursorVisibility, {
+			root: null,
+			rootMargin: "100px",
+			threshold: 1.0,
+		})
+		if(cursorRef && cursorRef.current) observer.observe(cursorRef.current)
+	}
+	useEffect(() => {
+		cursorListener()
+	}, [])
+
 	let cursorLeftPos = 0,
 		cursorTopPos = 0,
 		cursorHeight = 0;
 	if (geometry) {
 		cursorLeftPos = geometry.left + geometry.width;
-		cursorTopPos = geometry.top;
-		cursorHeight = geometry.height + 10;
+		cursorTopPos = geometry.top + window?.scrollY;
+		cursorHeight = geometry.height;
 	}
 
 	// function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
@@ -214,11 +236,12 @@ export default function EditorView() {
 				mouseDown.current = event;
 				setIsDragging(true);
 			}}
+			id="editor"
 			onMouseMove={(event) => handleMouseMove(event)}
 			onMouseUp={() => {
 				setIsDragging(false);
 			}}
-			className="p-10 relative select-none cursor-text "
+			className="relative select-none cursor-text "
 		>
 			{editor.map((htmlString: string, index: number) => (
 				<Fragment key={index}>
@@ -229,12 +252,13 @@ export default function EditorView() {
 				</Fragment>
 			))}
 			<div
+				ref={cursorRef}
 				style={{
 					left: `${cursorLeftPos}px`,
 					top: `${cursorTopPos}px`,
 					height: `${cursorHeight}px`,
 				}}
-				className="animate-cursor font-sans min-h-8 transform -scale-x-50 -mt-2 absolute w-1 bg-green-600 mb-0 overflow-hidden tracking-tighter white"
+				className="animate-cursor font-sans min-h-8 transform -mt-0 -scale-x-50 absolute w-1 bg-white mb-0 overflow-hidden tracking-tighter white"
 			/>
 		</div>
 	);
@@ -243,7 +267,9 @@ export default function EditorView() {
 const LineComponent = memo((props: { htmlString: string; lineIndex: number }) =>
 	createElement('pre', {
 		id: `line_${props.lineIndex}`,
-		className: 'h-8 text-xl w-full font-sans',
+		before: `${props.lineIndex}`,
+		className: `h-8 text-xl hover:bg-white/2 relative w-full font-sans`,
+		// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 		dangerouslySetInnerHTML: { __html: props.htmlString },
 	})
 );
