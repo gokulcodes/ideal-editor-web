@@ -720,15 +720,15 @@ class Editor {
 				}
 			}
 			// console.log(start, end);
-			if (start && end) {
-				linePtr.deleteLetters(this.cursor, start, end);
-			} else if (
+			if (
 				start &&
 				end &&
 				(start.prevLetter == null || start.prevLetter.text === '') &&
 				end.nextLetter == null
 			) {
 				this.deleteLines(linePtr, linePtr);
+			} else if (start && end) {
+				linePtr.deleteLetters(this.cursor, start, end);
 			}
 			// if (start && end) {
 			//   if ((start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
@@ -750,7 +750,7 @@ class Editor {
 			//   //   linePtr.lineHead = end.nextLetter;
 			//   // }
 			// }
-			if (linePtr) linePtr = linePtr.nextLine; // this is a problem
+			linePtr = linePtr.nextLine; // this is a problem
 		}
 	}
 

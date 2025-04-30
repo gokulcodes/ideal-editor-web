@@ -18,7 +18,7 @@ export default function EditorView() {
 	const mouseDown = useRef<React.MouseEvent<HTMLDivElement> | null>(null);
 	const editor = state.editor;
 	const cursor = editor.cursor;
-	const cursorRef = useRef(null)
+	const cursorRef = useRef(null);
 
 	useEffect(() => {
 		function handleKeyDown(event: KeyboardEvent) {
@@ -26,13 +26,12 @@ export default function EditorView() {
 			if (editor.isIgnorableKeys(event)) {
 				return;
 			}
-
 			if (event.key === 'Tab') {
 				cursor.lineCursor.addLetter(cursor, '\t');
 				dispatch({ type: 'type', payload: editor });
 				setTimeout(() => {
 					const activeCursor =
-						document.querySelector('#activeCursor');
+						document.getElementById('activeCursor');
 					const geometry = activeCursor?.getBoundingClientRect();
 					setGeometry(geometry);
 				}, 0);
@@ -48,7 +47,7 @@ export default function EditorView() {
 				editor.handleKeyboardShortcuts(cb, event).then(() => {
 					setTimeout(() => {
 						const activeCursor =
-							document.querySelector('#activeCursor');
+							document.getElementById('activeCursor');
 						const geometry = activeCursor?.getBoundingClientRect();
 						setGeometry(geometry);
 						console.timeEnd('Keyboard Operations');
@@ -62,7 +61,7 @@ export default function EditorView() {
 				dispatch({ type: 'type', payload: editor });
 				setTimeout(() => {
 					const activeCursor =
-						document.querySelector('#activeCursor');
+						document.getElementById('activeCursor');
 					const geometry = activeCursor?.getBoundingClientRect();
 					setGeometry(geometry);
 				}, 0);
@@ -73,7 +72,7 @@ export default function EditorView() {
 				dispatch({ type: 'type', payload: editor });
 				setTimeout(() => {
 					const activeCursor =
-						document.querySelector('#activeCursor');
+						document.getElementById('activeCursor');
 					const geometry = activeCursor?.getBoundingClientRect();
 					setGeometry(geometry);
 				}, 0);
@@ -94,7 +93,7 @@ export default function EditorView() {
 				dispatch({ type: 'type', payload: editor });
 				setTimeout(() => {
 					const activeCursor =
-						document.querySelector('#activeCursor');
+						document.getElementById('activeCursor');
 					const geometry = activeCursor?.getBoundingClientRect();
 					setGeometry(geometry);
 				}, 0);
@@ -114,7 +113,7 @@ export default function EditorView() {
 			dispatch({ type: 'type', payload: editor });
 
 			setTimeout(() => {
-				const activeCursor = document.querySelector('#activeCursor');
+				const activeCursor = document.getElementById('activeCursor');
 				const geometry = activeCursor?.getBoundingClientRect();
 				setGeometry(geometry);
 			}, 0);
@@ -126,29 +125,34 @@ export default function EditorView() {
 			}
 			const targetNode = event.target as HTMLElement;
 			const parentNode = targetNode.parentNode as HTMLElement;
-			let lineNo = 0,
-				textNo = 0;
-			if (!parentNode.id) {
+			
+			// curser letter position calculation. This improved the overall editor performance by 20x
+			const clientX = event.clientX
+			let charWidth = clientX / 12;
+			charWidth = parseInt(charWidth.toString())
+			const textNo = charWidth;
+			
+			let lineNo = 0;
+			if (!parentNode.id || parentNode.id === 'editor') {
 				lineNo = parseInt(targetNode.id.split('_')[1]);
-				textNo = targetNode.childNodes.length;
 			} else {
 				lineNo = parseInt(parentNode.id.split('_')[1]);
-				textNo = parseInt(targetNode.id.split('_')[1]);
 			}
 			editor.moveCursorToNthLine(lineNo, textNo);
 			dispatch({ type: 'type', payload: editor });
 			setTimeout(() => {
-				const activeCursor = document.querySelector('#activeCursor');
+				const activeCursor = document.getElementById('activeCursor');
 				const geometry = activeCursor?.getBoundingClientRect();
-				setGeometry(geometry);
+				setGeometry(geometry);	
 			}, 0);
 		}
-		const activeCursor = document.querySelector('#activeCursor');
+		const activeCursor = document.getElementById('activeCursor');
 		const geometry = activeCursor?.getBoundingClientRect();
 		setGeometry(geometry);
 		document.removeEventListener('keydown', handleKeyDown);
 		document.addEventListener('keydown', handleKeyDown);
 		document.addEventListener('click', handleClick);
+		
 		// window.editor = editor;
 	}, [editor, cursor, dispatch]);
 
@@ -157,29 +161,42 @@ export default function EditorView() {
 		function handleCursorVisibility(entries: IntersectionObserverEntry[]) {
 			entries.forEach((entry) => {
 				if (!entry.isIntersecting) {
-					console.log(entry.isIntersecting)
-					editorRef?.scrollBy({top: 32, behavior: "smooth"})
+					// console.log(entry.isIntersecting, showCursorInViewPort);
+					if (editorRef) {
+						// if (geometry?.top <= 0) {
+						// 	editorRef.scrollTo({ top: -64, behavior: 'smooth' });
+						// } else {
+							editorRef.scrollBy({ top: 32, behavior: 'smooth' });
+						// }
+					}
 				}
-			})
+			});
 		}
 		const observer = new IntersectionObserver(handleCursorVisibility, {
 			root: null,
-			rootMargin: "100px",
-			threshold: 1.0,
-		})
-		if(cursorRef && cursorRef.current) observer.observe(cursorRef.current)
+			rootMargin: '0px',
+			threshold: 0,
+		});
+		if (cursorRef && cursorRef.current) observer.observe(cursorRef.current);
 	}
 	useEffect(() => {
-		cursorListener()
-	}, [])
+		cursorListener();
+		
+	}, []);
 
 	let cursorLeftPos = 0,
 		cursorTopPos = 0,
 		cursorHeight = 0;
+
 	if (geometry) {
-		cursorLeftPos = geometry.left + geometry.width;
-		cursorTopPos = geometry.top + window?.scrollY;
-		cursorHeight = geometry.height;
+		const editorRef = document.getElementById('editor');
+		if (editorRef) {
+			// const containerRect = editorRef.getBoundingClientRect();
+			// console.log(geometry, document.getElementById('activeCursor')?.getBoundingClientRect())
+			cursorLeftPos = geometry.left + geometry.width;
+			cursorTopPos = geometry.top + editorRef.scrollTop;
+			cursorHeight = geometry.height;
+		}
 	}
 
 	// function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
@@ -212,7 +229,7 @@ export default function EditorView() {
 			const parentNode = mouseUpTarget.parentNode as HTMLDivElement;
 			lineEnd = parseInt(parentNode.id.split('_')?.[1]);
 		}
-
+		
 		if (mouseDownPosition != mouseUpPosition) {
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
@@ -223,7 +240,7 @@ export default function EditorView() {
 			editor.moveCursorToNthLine(lineEnd, mouseUpPosition);
 			dispatch({ type: 'type', payload: editor });
 			setTimeout(() => {
-				const activeCursor = document.querySelector('#activeCursor');
+				const activeCursor = document.getElementById('activeCursor');
 				const geometry = activeCursor?.getBoundingClientRect();
 				setGeometry(geometry);
 			}, 0);
@@ -241,8 +258,8 @@ export default function EditorView() {
 			onMouseUp={() => {
 				setIsDragging(false);
 			}}
-			className="relative select-none cursor-text "
-		>
+			className="relative select-none cursor-text h-[100vh] overflow-y-scroll"
+		>	
 			{editor.map((htmlString: string, index: number) => (
 				<Fragment key={index}>
 					<LineComponent
@@ -258,7 +275,7 @@ export default function EditorView() {
 					top: `${cursorTopPos}px`,
 					height: `${cursorHeight}px`,
 				}}
-				className="animate-cursor font-sans min-h-8 transform -mt-0 -scale-x-50 absolute w-1 bg-white mb-0 overflow-hidden tracking-tighter white"
+				className="animate-cursor font-sans min-h-6 transform -mt-0 -scale-x-50 absolute w-1 bg-white mb-0 overflow-hidden tracking-tighter white"
 			/>
 		</div>
 	);
@@ -268,7 +285,7 @@ const LineComponent = memo((props: { htmlString: string; lineIndex: number }) =>
 	createElement('pre', {
 		id: `line_${props.lineIndex}`,
 		before: `${props.lineIndex}`,
-		className: `h-8 text-xl hover:bg-white/2 relative w-full font-sans`,
+		className: `h-6 text-xl hover:bg-white/2 relative w-full font-sans`,
 		// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 		dangerouslySetInnerHTML: { __html: props.htmlString },
 	})
