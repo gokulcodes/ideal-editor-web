@@ -1,8 +1,12 @@
 @import 'tailwindcss';
 
+/* *{
+	transition: all 0.2s ease-in;
+} */
+
 :root {
 	--background: #ffffff;
-	--foreground: #171717;
+	--foreground: #1b1b1b;
 }
 
 @theme inline {
@@ -32,7 +36,7 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--background: #0a0a0a;
+		--background: #1b1b1b;
 		--foreground: #ededed;
 	}
 }
@@ -45,4 +49,11 @@ body {
 
 .selectedText {
 	background-color: rgba(0, 128, 0, 0.269);
+}
+
+pre:has(#activeCursor) {
+	background-color: rgba(255, 255, 255, 0.05);
+	/* border-top: 0.5px solid rgba(255,255,255,0.08);
+	border-bottom: 0.5px solid rgba(255,255,255,0.08);
+	border-style: inset; */
 }

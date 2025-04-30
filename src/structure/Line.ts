@@ -95,6 +95,7 @@ class Line {
 		 */
 		if (!nextToEnd) {
 			prevToStart.nextLetter = null;
+			cursor.lineCursor.lineTail = prevToStart;
 			cursor.letterCursor = prevToStart;
 			return;
 		}
@@ -127,11 +128,10 @@ class Line {
 				cursor.lineCursor === currLine &&
 				cursor.letterCursor === letterHeadPtr
 			) {
-				lineText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
+				lineText += `<span id="activeCursor">${letterHeadPtr.text}</span>`;
 				// lineText +=
 				//   "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>";
-			} else
-				lineText += `<span id=text_${cnt}>${letterHeadPtr.text}</span>`;
+			} else lineText += letterHeadPtr.text;
 			if (letterHeadPtr) letterHeadPtr = letterHeadPtr.nextLetter;
 			cnt++;
 		}
