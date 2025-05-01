@@ -408,24 +408,36 @@ class Editor {
 				if (!this.cursor.lineCursor.prevLine) {
 					// if there is no prevLine, don't do anything
 					let temp: Letter | null = this.cursor.lineCursor.lineHead;
-					console.log(temp);
 					while (temp && nextPos--) {
-						temp.isSelected = true;
+						temp.isSelected = !temp.isSelected;
 						temp = temp.nextLetter;
 					}
 					return;
 				}
 
 				// this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
-				let temp: Letter | null = this.cursor.lineCursor.lineHead;
+				let temp: Letter | null = this.cursor.lineCursor.lineHead,
+					tempNextPos = nextPos;
 				// console.log(temp);
-				while (temp && nextPos--) {
-					temp.isSelected = true;
+				while (temp && tempNextPos--) {
+					temp.isSelected = !temp.isSelected;
 					temp = temp.nextLetter;
 				}
 				// temp = this.cursor.lineCursor.lineTail;
 				this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
 				this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+				temp = this.cursor.lineCursor.lineHead;
+				while (temp && nextPos--) {
+					temp = temp.nextLetter;
+				}
+				const cursorPos = temp?.prevLetter;
+				while (temp) {
+					temp.isSelected = !temp.isSelected;
+					temp = temp.nextLetter;
+				}
+				if (cursorPos) {
+					this.cursor.letterCursor = cursorPos;
+				}
 				break;
 			case 'ArrowDown':
 				this.selectionMode = true;
@@ -434,20 +446,33 @@ class Editor {
 					// if there is no nextLine, don't do anything
 					let temp1: Letter | null = this.cursor.lineCursor.lineHead;
 					while (temp1 && prevPos--) {
-						temp1.isSelected = true;
+						temp1.isSelected = !temp1.isSelected;
 						temp1 = temp1.nextLetter;
 					}
 					return;
 				}
 				// this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
-				let temp1: Letter | null = this.cursor.lineCursor.lineTail;
-				while (temp1 && prevPos--) {
-					temp1.isSelected = true;
-					temp1 = temp1.prevLetter;
+				let temp1: Letter | null = this.cursor.lineCursor.lineHead,
+					tempPrevPos = prevPos;
+				while (temp1 && tempPrevPos--) {
+					temp1 = temp1.nextLetter;
+				}
+				while (temp1) {
+					temp1.isSelected = !temp1.isSelected;
+					temp1 = temp1.nextLetter;
 				}
 				// temp1 = this.cursor.lineCursor.lineTail;
 				this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
 				this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+				temp1 = this.cursor.lineCursor.lineHead;
+				while (temp1 && prevPos--) {
+					temp1.isSelected = !temp1.isSelected;
+					temp1 = temp1.nextLetter;
+				}
+				if (temp1) {
+					temp1 = temp1.prevLetter;
+					if (temp1) this.cursor.letterCursor = temp1;
+				}
 				break;
 			case 'ArrowLeft':
 				this.selectionMode = true;

@@ -125,13 +125,13 @@ export default function EditorView() {
 			}
 			const targetNode = event.target as HTMLElement;
 			const parentNode = targetNode.parentNode as HTMLElement;
-			
+
 			// curser letter position calculation. This improved the overall editor performance by 20x
-			const clientX = event.clientX
+			const clientX = event.clientX;
 			let charWidth = clientX / 12;
-			charWidth = parseInt(charWidth.toString())
+			charWidth = parseInt(charWidth.toString());
 			const textNo = charWidth;
-			
+
 			let lineNo = 0;
 			if (!parentNode.id || parentNode.id === 'editor') {
 				lineNo = parseInt(targetNode.id.split('_')[1]);
@@ -143,7 +143,7 @@ export default function EditorView() {
 			setTimeout(() => {
 				const activeCursor = document.getElementById('activeCursor');
 				const geometry = activeCursor?.getBoundingClientRect();
-				setGeometry(geometry);	
+				setGeometry(geometry);
 			}, 0);
 		}
 		const activeCursor = document.getElementById('activeCursor');
@@ -152,7 +152,7 @@ export default function EditorView() {
 		document.removeEventListener('keydown', handleKeyDown);
 		document.addEventListener('keydown', handleKeyDown);
 		document.addEventListener('click', handleClick);
-		
+
 		// window.editor = editor;
 	}, [editor, cursor, dispatch]);
 
@@ -166,7 +166,7 @@ export default function EditorView() {
 						// if (geometry?.top <= 0) {
 						// 	editorRef.scrollTo({ top: -64, behavior: 'smooth' });
 						// } else {
-							editorRef.scrollBy({ top: 32, behavior: 'smooth' });
+						editorRef.scrollBy({ top: 32, behavior: 'smooth' });
 						// }
 					}
 				}
@@ -181,7 +181,6 @@ export default function EditorView() {
 	}
 	useEffect(() => {
 		cursorListener();
-		
 	}, []);
 
 	let cursorLeftPos = 0,
@@ -229,7 +228,7 @@ export default function EditorView() {
 			const parentNode = mouseUpTarget.parentNode as HTMLDivElement;
 			lineEnd = parseInt(parentNode.id.split('_')?.[1]);
 		}
-		
+
 		if (mouseDownPosition != mouseUpPosition) {
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
@@ -259,7 +258,7 @@ export default function EditorView() {
 				setIsDragging(false);
 			}}
 			className="relative select-none cursor-text h-[100vh] overflow-y-scroll"
-		>	
+		>
 			{editor.map((htmlString: string, index: number) => (
 				<Fragment key={index}>
 					<LineComponent
