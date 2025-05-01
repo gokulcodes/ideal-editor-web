@@ -285,7 +285,7 @@ const LineComponent = memo((props: { htmlString: string; lineIndex: number }) =>
 	createElement('pre', {
 		id: `line_${props.lineIndex}`,
 		before: `${props.lineIndex}`,
-		className: `h-6 text-xl hover:bg-white/2 relative w-full font-sans`,
+		className: `h-6 text-xl overflow-hidden hover:bg-white/2 relative w-full font-sans`,
 		// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 		dangerouslySetInnerHTML: { __html: props.htmlString },
 	})
