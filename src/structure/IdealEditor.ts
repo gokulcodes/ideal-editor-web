@@ -839,7 +839,7 @@ class Editor {
 	}
 
 	isKeyboardShortcut(event: KeyboardEvent) {
-		if (event.metaKey) {
+		if (event.metaKey || event.ctrlKey) {
 			if (event.key == 'c') {
 				return true;
 			}
@@ -918,7 +918,7 @@ class Editor {
 
 	async handleKeyboardShortcuts(cb: () => void, event: KeyboardEvent) {
 		return new Promise(async (resolve) => {
-			if (event.metaKey) {
+			if (event.metaKey || event.ctrlKey) {
 				if (event.key == 'c') {
 					this.copySelection();
 					cb();
@@ -963,7 +963,11 @@ class Editor {
 					cb();
 					resolve('Success');
 				} else if (this.isCursorMoveEvent(event)) {
-					this.moveCursor(event, event.altKey, event.metaKey);
+					this.moveCursor(
+						event,
+						event.altKey,
+						event.metaKey || event.ctrlKey
+					);
 					cb();
 					resolve('Success');
 				} else if (event.key === 'a') {
@@ -1022,7 +1026,11 @@ class Editor {
 					resolve('Success');
 					return;
 				}
-				this.moveCursor(event, event.altKey, event.metaKey);
+				this.moveCursor(
+					event,
+					event.altKey,
+					event.metaKey || event.ctrlKey
+				);
 				cb();
 				resolve('Success');
 			}
