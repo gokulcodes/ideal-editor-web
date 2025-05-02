@@ -55,7 +55,6 @@ class Line {
 	deleteLetters(cursor: Cursor, startPosition: Letter, endPosition: Letter) {
 		const prevToStart = startPosition.prevLetter;
 		const nextToEnd = endPosition.nextLetter;
-
 		/**
 		 * What if prevToStart is Sential Node?
 		 */

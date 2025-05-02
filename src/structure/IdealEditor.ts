@@ -622,61 +622,89 @@ class Editor {
 	}
 
 	cutSelection() {
-		let linePtr: Line | null = this.editorHead,
-			copyText = '';
-		// console.log(this.cutSelection)
-		while (linePtr) {
-			// console.log(linePtr)
-			let head = linePtr.lineHead.nextLetter;
+		const isMultiLineSelected =
+			document.getElementsByClassName('selectedText')?.length > 1;
+		let copyText = '';
+		let linePtr: Line | null = this.cursor.lineCursor;
+		console.log(isMultiLineSelected);
+		if (!isMultiLineSelected) {
+			// single line selection
+			let letterPtr: Letter | null = this.cursor.lineCursor.lineHead;
 			let start = null,
 				end = null;
-			while (head) {
-				if (head.isSelected) {
-					start = head;
+
+			while (letterPtr) {
+				if (letterPtr.isSelected) {
+					start = letterPtr;
 					break;
 				}
-				head = head.nextLetter;
+				letterPtr = letterPtr.nextLetter;
 			}
-			while (head) {
-				copyText += head.text;
-				end = head;
-				head = head.nextLetter;
-				if (head && !head.isSelected) {
-					break;
-				}
+			while (letterPtr && letterPtr.isSelected) {
+				copyText += letterPtr.text;
+				end = letterPtr;
+				letterPtr = letterPtr.nextLetter;
 			}
-			// console.log(start, end);
-			if (start && end) {
-				linePtr.deleteLetters(this.cursor, start, end);
-			} else if (
-				start &&
-				end &&
-				(start.prevLetter == null || start.prevLetter.text === '') &&
-				end.nextLetter == null
+			if (
+				this.cursor.lineCursor.lineHead.isSelected &&
+				this.cursor.lineCursor.lineTail.isSelected
 			) {
-				this.deleteLines(linePtr, linePtr);
+				this.deleteLines(
+					this.cursor.lineCursor,
+					this.cursor.lineCursor
+				);
+			} else if (start && end) {
+				this.cursor.lineCursor.deleteLetters(this.cursor, start, end);
 			}
-			// if (start && end) {
-			//   if ((start.prevLetter == null || start.prevLetter.text === '') && end.nextLetter == null) {
-			//     this.deleteLines(linePtr, linePtr);
-			//     if(linePtr) linePtr = linePtr.nextLine;
-			//     continue;
-			//   }
-			//   const prevLetter = start?.prevLetter;
-			//   if (prevLetter) {
-			//     // console.log(start, prevLetter);
-			//     prevLetter.nextLetter = end.nextLetter;
-			//     end.prevLetter = prevLetter;
-			//     this.cursor.letterCursor = prevLetter;
-			//   }
-			//   // if (!end.nextLetter) {
-			//   //   linePtr.lineTail = prevLetter;
-			//   // }
-			//   // if (!start.prevLetter) {
-			//   //   linePtr.lineHead = end.nextLetter;
-			//   // }
-			// }
-			if (linePtr) linePtr = linePtr.nextLine; // this is a problem
+		} else {
+			const nextLine = linePtr.nextLine;
+			let isNextline = false;
+			if (nextLine && nextLine.lineHead.isSelected) {
+				isNextline = true;
+			}
+			while (linePtr) {
+				let head: Letter | null = linePtr.lineHead.nextLetter;
+				let start = null,
+					end = null,
+					currLineTxt = '';
+				while (head) {
+					if (head.isSelected) {
+						start = head;
+						break;
+					}
+					head = head.nextLetter;
+				}
+				while (head && head.isSelected) {
+					currLineTxt += head.text;
+					end = head;
+					head = head.nextLetter;
+				}
+				if (!start && !end) {
+					break;
+				}
+				if (
+					(linePtr.lineHead.isSelected ||
+						linePtr.lineHead.nextLetter?.isSelected) &&
+					(linePtr.lineTail.isSelected ||
+						linePtr.lineTail.prevLetter?.isSelected)
+				) {
+					this.deleteLines(linePtr, linePtr);
+				} else if (start && end) {
+					linePtr.deleteLetters(this.cursor, start, end);
+				}
+				if (currLineTxt) currLineTxt += '\n';
+				if (isNextline) {
+					linePtr = linePtr.nextLine; // this is a problem
+					copyText += currLineTxt;
+				} else {
+					linePtr = linePtr.prevLine;
+					copyText = currLineTxt + copyText;
+				}
+				if (linePtr) {
+					this.cursor.lineCursor = linePtr;
+					this.cursor.letterCursor = linePtr?.lineHead;
+				}
+			}
 		}
 		navigator.clipboard.writeText(copyText);
 	}
