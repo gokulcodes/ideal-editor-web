@@ -101,6 +101,10 @@ export default function EditorView() {
 				return;
 			}
 
+			if (editor.selectionMode) {
+				editor.deleteSelection()
+			}
+
 			cursor.lineCursor.addLetter(cursor, event.key);
 			// if (editor.undoRedoBuffer.length == 0) {
 			// 	editor.undoRedoBuffer.push(deepCopy(editor));
