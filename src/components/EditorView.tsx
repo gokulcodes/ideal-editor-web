@@ -57,6 +57,7 @@ export default function EditorView() {
 			}
 
 			if (editor.isCursorMoveEvent(event)) {
+				editor.resetSelection();
 				editor.moveCursor(event);
 				dispatch({ type: 'type', payload: editor });
 				setTimeout(() => {
@@ -274,7 +275,7 @@ export default function EditorView() {
 					top: `${cursorTopPos}px`,
 					height: `${cursorHeight}px`,
 				}}
-				className="animate-cursor font-sans min-h-6 transform -mt-0 -scale-x-50 absolute w-1 bg-white mb-0 overflow-hidden tracking-tighter white"
+				className="animate-cursor font-sans min-h-8 transform -mt-0 -scale-x-50 absolute w-1 bg-white mb-0 overflow-hidden tracking-tighter white"
 			/>
 		</div>
 	);
@@ -284,7 +285,7 @@ const LineComponent = memo((props: { htmlString: string; lineIndex: number }) =>
 	createElement('pre', {
 		id: `line_${props.lineIndex}`,
 		before: `${props.lineIndex}`,
-		className: `h-6 text-xl overflow-hidden hover:bg-white/2 relative w-full font-sans`,
+		className: `h-8 text-xl overflow-hidden hover:bg-white/2 relative w-full font-sans`,
 		// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 		dangerouslySetInnerHTML: { __html: props.htmlString },
 	})
