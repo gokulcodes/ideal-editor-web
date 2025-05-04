@@ -15,10 +15,11 @@ export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
 	const [isDragging, setIsDragging] = useState(false);
 	// const [hasMoved, setHasMoved] = useState(false);
-	const hasMoved = useRef(false)
+	const hasMoved = useRef(false);
+	const prevMove = useRef<React.MouseEvent<HTMLDivElement> | null>(null)
 	const [geometry, setGeometry] = useState<DOMRect>();
 	const mouseDown = useRef<React.MouseEvent<HTMLDivElement> | null>(null);
-	const editorRef = useRef<HTMLDivElement>(null)
+	const editorRef = useRef<HTMLDivElement>(null);
 	const editor = state.editor;
 	const cursor = editor.cursor;
 	const cursorRef = useRef(null);
@@ -214,26 +215,43 @@ export default function EditorView() {
 	// function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
 	// }
 
-	let offsetX = 0, offsetY = 0;
+	let offsetX = 0,
+		offsetY = 0;
 
 	function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
 		if (!mouseDown.current || !isDragging) {
 			return;
 		}
-		
-		const x = event.clientX - offsetX
-		const y = event.clientY - offsetY
 
-		if (editorRef.current && (Math.abs(x - editorRef.current.offsetLeft) > 1 || Math.abs(y - editorRef.current.offsetTop))) {
+		let textStart = Math.floor(mouseDown.current.clientX / 12),
+			textEnd = Math.floor(event.clientX / 12);
+		let lineStart = Math.floor(mouseDown.current.clientY / 32),
+			lineEnd = Math.floor(event.clientY / 32);
+
+		// console.log('MouseDown: ', "Text Start: ", parseInt(mouseDown.current.clientX / 12), "Line Start: ", parseInt(mouseDown.current.clientY / 32))
+		// console.log('MouseMove: ', "Text End: ", parseInt(event.clientX / 12), "Line End: ", parseInt(event.clientY / 32))
+
+		// if(lineStart > lineEnd) [lineStart, lineEnd] = [lineEnd, lineStart]
+
+		// console.log(event.target)
+		const x = event.clientX - offsetX;
+		const y = event.clientY - offsetY;
+		prevMove.current = event;
+		if (
+			editorRef.current &&
+			(Math.abs(x - editorRef.current.offsetLeft) > 1 ||
+				Math.abs(y - editorRef.current.offsetTop))
+		) {
 			hasMoved.current = true;
 		}
-		let mouseDownTarget : HTMLElement | null = mouseDown.current.target as HTMLElement;
-		let mouseUpTarget : HTMLElement | null = event.target as HTMLDivElement;
+		let mouseDownTarget: HTMLElement | null = mouseDown.current
+			.target as HTMLElement;
+		let mouseUpTarget: HTMLElement | null = event.target as HTMLDivElement;
 		while (mouseDownTarget && !mouseDownTarget.id.includes('line')) {
-			mouseDownTarget = mouseDownTarget.parentElement
+			mouseDownTarget = mouseDownTarget.parentElement;
 		}
 		while (mouseUpTarget && !mouseUpTarget.id.includes('line')) {
-			mouseUpTarget = mouseUpTarget.parentElement
+			mouseUpTarget = mouseUpTarget.parentElement;
 		}
 		// console.log(mouseDownTarget, mouseUpTarget)
 		// const mouseDownPosition = parseInt(mouseDownTarget.id?.split('_')?.[1]);
@@ -255,28 +273,34 @@ export default function EditorView() {
 		// 	lineEnd = parseInt(parentNode.id.split('_')?.[1]);
 		// }
 		// console.log(mouseDownTarget, mouseUpTarget)
-		const lineStartId = mouseDownTarget?.id.split("_"), lineEndId = mouseUpTarget?.id.split("_");
-		if (lineStartId?.[0] === 'line' && lineEndId?.[0] === 'line') {
-			const clientX = event.clientX;
-			let charWidth = clientX / 12;
-			charWidth = parseInt(charWidth.toString());
-			const textNo = charWidth;
-			const lineStart = parseInt(lineStartId[1]), lineEnd = parseInt(lineEndId[1])
+		// const lineStartId = mouseDownTarget?.id.split('_'),
+		// 	lineEndId = mouseUpTarget?.id.split('_');
+		// if (lineStartId?.[0] === 'line' && lineEndId?.[0] === 'line') {
+		// 	const clientX = event.clientX;
+		// 	let charWidth = clientX / 12;
+		// 	charWidth = parseInt(charWidth.toString());
+		// 	const textNo = charWidth;
+			// const lineStart = parseInt(lineStartId[1]),
+				// lineEnd = parseInt(lineEndId[1]);
 			// console.log(textNo)
-			editor.moveCursorToNthLine(lineEnd, textNo);
-			
-			const dir = mouseDown.current.clientY >= event.clientY ? "UP" : "DOWN"
-			
+			editor.moveCursorToNthLine(lineEnd, textEnd);
+
+			const dir =
+				mouseDown.current.clientY >= event.clientY ? 'UP' : 'DOWN';
+		if (dir == 'UP') {
+			[lineStart, lineEnd] = [lineEnd, lineStart];
+			[textStart, textEnd] = [textEnd, textStart];
+		}
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
 				lineEnd,
-				textNo,
-				textNo,
+				textStart,
+				textEnd,
 				dir
 			);
-		} else {
+		// } else {
 			// console.log(mouseDownTarget, mouseUpTarget)
-		}
+		// }
 		// console.log(, mouseUpTarget.id.split('_'))
 		// if (mouseDownPosition != mouseUpPosition) {
 		// 	editor.updateLetterSelectionOnMouseMove(
@@ -285,12 +309,12 @@ export default function EditorView() {
 		// 		mouseDownPosition,
 		// 		mouseUpPosition
 		// 	);
-			dispatch({ type: 'type', payload: editor });
-			setTimeout(() => {
-				const activeCursor = document.getElementById('activeCursor');
-				const geometry = activeCursor?.getBoundingClientRect();
-				setGeometry(geometry);
-			}, 0);
+		dispatch({ type: 'type', payload: editor });
+		setTimeout(() => {
+			const activeCursor = document.getElementById('activeCursor');
+			const geometry = activeCursor?.getBoundingClientRect();
+			setGeometry(geometry);
+		}, 0);
 		// }
 	}
 	return (
@@ -300,10 +324,10 @@ export default function EditorView() {
 			onMouseDown={(event) => {
 				mouseDown.current = event;
 				setIsDragging(true);
-				const editor = editorRef.current
+				const editor = editorRef.current;
 				if (editor) {
-					offsetX = event.clientX - editor?.offsetLeft
-					offsetY = event.clientY - editor?.offsetTop
+					offsetX = event.clientX - editor?.offsetLeft;
+					offsetY = event.clientY - editor?.offsetTop;
 				}
 			}}
 			onMouseMove={(event) => handleMouseMove(event)}
@@ -324,7 +348,7 @@ export default function EditorView() {
 			<div
 				ref={cursorRef}
 				style={{
-					pointerEvents: "none",
+					pointerEvents: 'none',
 					left: `${cursorLeftPos}px`,
 					top: `${cursorTopPos}px`,
 					height: `${cursorHeight}px`,

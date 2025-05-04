@@ -116,18 +116,18 @@ class Line {
 					if (cursor.letterCursor === letterHeadPtr) {
 						selectedText += `<span class="pointer-events-none" id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
 					} else {
-						selectedText += `<span id=text_${cnt}>${letterHeadPtr.text}</span>`;
+						selectedText += `<span class="pointer-events-none" id=text_${cnt}>${letterHeadPtr.text}</span>`;
 					}
 					letterHeadPtr = letterHeadPtr.nextLetter;
 					cnt++;
 				}
-				lineText += `<span class="selectedText">${selectedText}</span>`;
+				lineText += `<span class="pointer-events-none selectedText">${selectedText}</span>`;
 				if (letterHeadPtr) letterHeadPtr = letterHeadPtr.prevLetter;
 			} else if (
 				cursor.lineCursor === currLine &&
 				cursor.letterCursor === letterHeadPtr
 			) {
-				lineText += `<span id="activeCursor">${letterHeadPtr.text}</span>`;
+				lineText += `<span class="pointer-events-none" id="activeCursor">${letterHeadPtr.text}</span>`;
 				// lineText +=
 				//   "<span class='animate-cursor font-light text-shadow-2xs text-shadow-white/40 text-2xl -mt-[7px] mb-0 overflow-hidden tracking-tighter white'>|</span>";
 			} else lineText += letterHeadPtr.text;
