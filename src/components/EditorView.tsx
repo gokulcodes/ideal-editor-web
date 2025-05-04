@@ -14,8 +14,11 @@ export default function EditorView() {
 	// const inputRef = useRef(null);
 	const { state, dispatch } = useContext(editorContext);
 	const [isDragging, setIsDragging] = useState(false);
+	// const [hasMoved, setHasMoved] = useState(false);
+	const hasMoved = useRef(false)
 	const [geometry, setGeometry] = useState<DOMRect>();
 	const mouseDown = useRef<React.MouseEvent<HTMLDivElement> | null>(null);
+	const editorRef = useRef<HTMLDivElement>(null)
 	const editor = state.editor;
 	const cursor = editor.cursor;
 	const cursorRef = useRef(null);
@@ -102,7 +105,7 @@ export default function EditorView() {
 			}
 
 			if (editor.selectionMode) {
-				editor.deleteSelection()
+				editor.deleteSelection();
 			}
 
 			cursor.lineCursor.addLetter(cursor, event.key);
@@ -124,6 +127,11 @@ export default function EditorView() {
 			}, 0);
 		}
 		function handleClick(this: Document, event: MouseEvent): void {
+			if (hasMoved.current) {
+				hasMoved.current = false;
+				return;
+			}
+			// console.log('clicked', mouseDown);
 			editor.resetSelection();
 			if (!event || !event.target) {
 				return;
@@ -159,7 +167,7 @@ export default function EditorView() {
 		document.addEventListener('click', handleClick);
 
 		// window.editor = editor;
-	}, [editor, cursor, dispatch]);
+	}, [editor, cursor, hasMoved, dispatch]);
 
 	function cursorListener() {
 		const editorRef = document.getElementById('editor');
@@ -206,60 +214,101 @@ export default function EditorView() {
 	// function handleMouseUp(event: React.MouseEvent<HTMLDivElement>) {
 	// }
 
+	let offsetX = 0, offsetY = 0;
+
 	function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-		// if (isDragging) {
-		// 	console.log(event.target)
-		// }
 		if (!mouseDown.current || !isDragging) {
 			return;
 		}
-		const mouseDownTarget = mouseDown.current.target as HTMLDivElement;
-		const mouseUpTarget = event.target as HTMLDivElement;
-		const mouseDownPosition = parseInt(mouseDownTarget.id?.split('_')?.[1]);
-		const mouseUpPosition = parseInt(mouseUpTarget.id?.split('_')?.[1]);
-		let lineStart = 0,
-			lineEnd = 0;
+		
+		const x = event.clientX - offsetX
+		const y = event.clientY - offsetY
 
-		if (!mouseDownTarget.parentNode) {
-			lineStart = parseInt(mouseDownTarget.id.split('_')?.[1]);
-		} else if (mouseDownTarget.parentNode) {
-			const parentNode = mouseDownTarget.parentNode as HTMLDivElement;
-			lineStart = parseInt(parentNode.id.split('_')?.[1]);
+		if (editorRef.current && (Math.abs(x - editorRef.current.offsetLeft) > 1 || Math.abs(y - editorRef.current.offsetTop))) {
+			hasMoved.current = true;
 		}
-
-		if (!mouseUpTarget.parentNode) {
-			lineEnd = parseInt(mouseUpTarget.id.split('_')?.[1]);
-		} else if (mouseUpTarget.parentNode) {
-			const parentNode = mouseUpTarget.parentNode as HTMLDivElement;
-			lineEnd = parseInt(parentNode.id.split('_')?.[1]);
+		let mouseDownTarget : HTMLElement | null = mouseDown.current.target as HTMLElement;
+		let mouseUpTarget : HTMLElement | null = event.target as HTMLDivElement;
+		while (mouseDownTarget && !mouseDownTarget.id.includes('line')) {
+			mouseDownTarget = mouseDownTarget.parentElement
 		}
+		while (mouseUpTarget && !mouseUpTarget.id.includes('line')) {
+			mouseUpTarget = mouseUpTarget.parentElement
+		}
+		// console.log(mouseDownTarget, mouseUpTarget)
+		// const mouseDownPosition = parseInt(mouseDownTarget.id?.split('_')?.[1]);
+		// const mouseUpPosition = parseInt(mouseUpTarget.id?.split('_')?.[1]);
+		// let lineStart = 0,
+		// 	lineEnd = 0;
 
-		if (mouseDownPosition != mouseUpPosition) {
+		// if (!mouseDownTarget.parentNode) {
+		// 	lineStart = parseInt(mouseDownTarget.id.split('_')?.[1]);
+		// } else if (mouseDownTarget.parentNode) {
+		// 	const parentNode = mouseDownTarget.parentNode as HTMLDivElement;
+		// 	lineStart = parseInt(parentNode.id.split('_')?.[1]);
+		// }
+
+		// if (!mouseUpTarget.parentNode) {
+		// 	lineEnd = parseInt(mouseUpTarget.id.split('_')?.[1]);
+		// } else if (mouseUpTarget.parentNode) {
+		// 	const parentNode = mouseUpTarget.parentNode as HTMLDivElement;
+		// 	lineEnd = parseInt(parentNode.id.split('_')?.[1]);
+		// }
+		// console.log(mouseDownTarget, mouseUpTarget)
+		const lineStartId = mouseDownTarget?.id.split("_"), lineEndId = mouseUpTarget?.id.split("_");
+		if (lineStartId?.[0] === 'line' && lineEndId?.[0] === 'line') {
+			const clientX = event.clientX;
+			let charWidth = clientX / 12;
+			charWidth = parseInt(charWidth.toString());
+			const textNo = charWidth;
+			const lineStart = parseInt(lineStartId[1]), lineEnd = parseInt(lineEndId[1])
+			// console.log(textNo)
+			editor.moveCursorToNthLine(lineEnd, textNo);
+			
+			const dir = mouseDown.current.clientY >= event.clientY ? "UP" : "DOWN"
+			
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
 				lineEnd,
-				mouseDownPosition,
-				mouseUpPosition
+				textNo,
+				textNo,
+				dir
 			);
-			editor.moveCursorToNthLine(lineEnd, mouseUpPosition);
+		} else {
+			// console.log(mouseDownTarget, mouseUpTarget)
+		}
+		// console.log(, mouseUpTarget.id.split('_'))
+		// if (mouseDownPosition != mouseUpPosition) {
+		// 	editor.updateLetterSelectionOnMouseMove(
+		// 		lineStart,
+		// 		lineEnd,
+		// 		mouseDownPosition,
+		// 		mouseUpPosition
+		// 	);
 			dispatch({ type: 'type', payload: editor });
 			setTimeout(() => {
 				const activeCursor = document.getElementById('activeCursor');
 				const geometry = activeCursor?.getBoundingClientRect();
 				setGeometry(geometry);
 			}, 0);
-		}
+		// }
 	}
-
 	return (
 		<div
+			id="editor"
+			ref={editorRef}
 			onMouseDown={(event) => {
 				mouseDown.current = event;
 				setIsDragging(true);
+				const editor = editorRef.current
+				if (editor) {
+					offsetX = event.clientX - editor?.offsetLeft
+					offsetY = event.clientY - editor?.offsetTop
+				}
 			}}
-			id="editor"
 			onMouseMove={(event) => handleMouseMove(event)}
 			onMouseUp={() => {
+				mouseDown.current = null;
 				setIsDragging(false);
 			}}
 			className="relative select-none cursor-text h-[100vh] overflow-y-scroll"
@@ -275,6 +324,7 @@ export default function EditorView() {
 			<div
 				ref={cursorRef}
 				style={{
+					pointerEvents: "none",
 					left: `${cursorLeftPos}px`,
 					top: `${cursorTopPos}px`,
 					height: `${cursorHeight}px`,

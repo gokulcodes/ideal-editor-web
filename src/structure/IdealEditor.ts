@@ -132,15 +132,68 @@ class Editor {
 		startLine: number,
 		endLine: number,
 		startPosition: number,
-		endPosition: number
+		endPosition: number,
+		dir: string
 	) {
 		startPosition -= 1;
 		endPosition -= 1;
-		// console.log(startLine, endLine)
-		this.selectionMode = true;
+		// console.log(
+		// 	'Line: ',
+		// 	startLine,
+		// 	endLine,
+		// 	'Text Pos: ',
+		// 	startPosition,
+		// 	endPosition
+		// );
+		// const nextLine = this.cursor.lineCursor.nextLine;
+		// let isNextline = false;
+		// if (
+		// 	nextLine &&
+		// 	(nextLine.lineHead.isSelected ||
+		// 		nextLine.lineHead.nextLetter?.isSelected)
+		// ) {
+		// 	isNextline = true;
+		// }
+		// console.log(dir);
+		if (dir === 'UP') {
+			[startLine, endLine] = [endLine, startLine];
+			let linePtr: Line | null = this.editorTail,
+				lineCnt = this.editorTail.lineIndex;
+			while (linePtr) {
+				this.selectionMode = true;
+				let head: Letter | null = linePtr.lineTail,
+					letterCnt = head.letterIndex;
+				while (head) {
+					if (startLine === endLine) {
+						if (
+							lineCnt == startLine &&
+							letterCnt >= startPosition &&
+							letterCnt <= endPosition
+						) {
+							head.isSelected = true;
+						}
+					} else if (lineCnt > startLine && lineCnt < endLine) {
+						head.isSelected = true;
+					} else if (
+						lineCnt == startLine &&
+						letterCnt >= startPosition
+					) {
+						head.isSelected = true;
+					} else if (lineCnt == endLine && letterCnt <= endPosition) {
+						head.isSelected = true;
+					}
+					head = head.prevLetter;
+					letterCnt--;
+				}
+				lineCnt--;
+				if (linePtr) linePtr = linePtr.prevLine; // this is a problem
+			}
+			return;
+		}
 		let linePtr: Line | null = this.editorHead,
 			lineCnt = 0;
 		while (linePtr) {
+			this.selectionMode = true;
 			let head = linePtr.lineHead.nextLetter,
 				letterCnt = 0;
 			while (head) {
@@ -398,6 +451,7 @@ class Editor {
 	}
 
 	updateLetterSelection(keyEvent: KeyboardEvent) {
+		console.log(keyEvent.key);
 		switch (keyEvent.key) {
 			case 'ArrowUp':
 				this.selectionMode = true;
@@ -1158,7 +1212,13 @@ class Editor {
 					cb();
 					resolve('Success');
 				} else if (event.key === 'a') {
-					this.updateLetterSelectionOnMouseMove(0, 1000, 0, 100);
+					this.updateLetterSelectionOnMouseMove(
+						0,
+						1000,
+						0,
+						100,
+						'UP'
+					);
 					cb();
 					resolve('Success');
 				} else if (event.key === 'z') {

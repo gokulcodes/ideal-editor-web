@@ -114,7 +114,7 @@ class Line {
 				let selectedText = '';
 				while (letterHeadPtr && letterHeadPtr.isSelected) {
 					if (cursor.letterCursor === letterHeadPtr) {
-						selectedText += `<span id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
+						selectedText += `<span class="pointer-events-none" id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
 					} else {
 						selectedText += `<span id=text_${cnt}>${letterHeadPtr.text}</span>`;
 					}
