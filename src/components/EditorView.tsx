@@ -19,7 +19,6 @@ export default function EditorView() {
 
 	// const [geometry, setGeometry] = useState<DOMRect>();
 	// const cursor = editor.cursor;
-	
 
 	useEffect(() => {
 		// setDragging(!isDragging)
@@ -71,7 +70,11 @@ export default function EditorView() {
 	// 	}
 	// }
 
-	const { isTyping } = useKeyboardControls(state, dispatch, editorRef.current);
+	const { isTyping } = useKeyboardControls(
+		state,
+		dispatch,
+		editorRef.current
+	);
 	useMouseControls(state, dispatch, editorRef.current);
 	useCursorListener(editorRef.current, cursorRef.current);
 
@@ -93,7 +96,7 @@ export default function EditorView() {
 			))}
 			<div
 				ref={cursorRef}
-				className={`${isTyping ? "" : "animate-cursor"} pointer-events-none font-sans min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] bg-white mb-0 overflow-hidden tracking-tighter white`}
+				className={`${isTyping ? '' : 'animate-cursor'} pointer-events-none font-sans min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] bg-white mb-0 overflow-hidden tracking-tighter white`}
 			/>
 		</div>
 	);
