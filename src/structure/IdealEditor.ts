@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import Line from './Line';
 import Letter from './Letter';
-import { isLineBreak } from './editorUtils';
+import { isLineBreak, isSpecialCharacter } from './editorUtils';
 
 /**
  * Cursor class holds the line and letter position where the cursor blinker should be shown
@@ -11,29 +11,38 @@ export class Cursor {
 	letterCursor: Letter;
 	lineNo: number;
 	letterNo: number;
+	observers: [];
 	constructor(linePosition: Line, letterPosition: Letter) {
 		this.lineCursor = linePosition;
 		this.letterCursor = letterPosition;
 		this.lineNo = 0;
 		this.letterNo = 0;
+		this.observers = [];
 	}
-}
 
-class SelectionDetails {
-	lineStart: number;
-	lineEnd: number;
-	letterStart: number;
-	letterEnd: number;
-	constructor(
-		lineStart: number,
-		lineEnd: number,
-		letterStart: number,
-		letterEnd: number
-	) {
-		this.lineStart = lineStart;
-		this.lineEnd = lineEnd;
-		this.letterStart = letterStart;
-		this.letterEnd = letterEnd;
+	set setLineCursor(nextLineUpdate: Line) {
+		// it will act like a middleware. whenever any update happens to line cursor, render the ui
+		this.lineCursor = nextLineUpdate;
+		setTimeout(() => {
+			document.dispatchEvent(new CustomEvent('oncursormove'));
+		}, 0);
+		// observers.map(() => function())
+	}
+
+	set setLetterCursor(nextLetterUpdate: Letter) {
+		this.letterCursor = nextLetterUpdate;
+		setTimeout(() => {
+			document.dispatchEvent(new CustomEvent('oncursormove'));
+		}, 0);
+	}
+
+	set setCursor(cursorPosition: { line: Line; letter: Letter }) {
+		this.lineCursor = cursorPosition.line;
+		this.letterCursor = cursorPosition.letter;
+		// console.log('moved');
+		setTimeout(() => {
+			document.dispatchEvent(new CustomEvent('oncursormove'));
+		}, 0);
 	}
 }
 
@@ -42,19 +51,37 @@ class Editor {
 	editorTail: Line;
 	cursor: Cursor;
 	selectionMode: boolean;
-	selectionDetails: SelectionDetails;
-	undoRedoBuffer: Array<Editor>;
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	prevCommands: Function[];
 	constructor() {
-		this.editorHead = new Line(); // sential line node
+		this.editorHead = new Line(this); // sential line node
 		this.editorTail = this.editorHead;
 		this.cursor = new Cursor(this.editorHead, this.editorHead.lineHead);
 		this.selectionMode = false;
-		this.selectionDetails = new SelectionDetails(0, 0, 0, 0);
-		this.undoRedoBuffer = [];
+		this.prevCommands = [];
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	executeCommand(command: Function) {
+		if (this.prevCommands.length > 20) this.prevCommands.shift();
+		const undoOperation = command();
+		this.prevCommands.push(undoOperation);
+	}
+
+	undo() {
+		if (!this.prevCommands.length) {
+			return;
+		}
+		const lastCommand = this.prevCommands.pop();
+		if (lastCommand) {
+			lastCommand();
+		}
+	}
+
+	redo() {}
+
 	insertLine() {
-		const newLine = new Line(this.cursor.lineCursor.lineIndex + 1);
+		const newLine = new Line(this);
 
 		// Linked new line next to current cursor line
 		const currLine = this.cursor.lineCursor;
@@ -81,12 +108,90 @@ class Editor {
 			nextAvailableLetter.prevLetter = newLine.lineHead;
 		}
 		currLetterPosition.nextLetter = null;
-		this.cursor.lineCursor = newLine;
-		this.cursor.letterCursor = newLine.lineHead;
+		this.cursor.setCursor = { line: newLine, letter: newLine.lineHead };
+		// this.cursor.letterCursor = ;
 		if (!this.cursor.lineCursor.nextLine) {
 			// Updating editorTail node once we insert a new line
 			this.editorTail = this.cursor.lineCursor;
 		}
+	}
+
+	deleteLines(start: Line, end: Line) {
+		const prev = start.prevLine;
+		const next = end.nextLine;
+		let copyLineContent = '',
+			temp: Line | null = start;
+		while (temp && temp != next) {
+			let letterTemp: Letter | null = temp.lineHead,
+				txt = '';
+			while (letterTemp) {
+				txt += letterTemp.text;
+				letterTemp = letterTemp.nextLetter;
+			}
+			copyLineContent += txt + '\n';
+			temp = temp.nextLine;
+		}
+		if (prev == null) {
+			start.nextLine = next;
+			if (!next) {
+				this.editorHead = new Line(this); // sential line node
+				this.editorTail = this.editorHead;
+				this.cursor = new Cursor(
+					this.editorHead,
+					this.editorHead.lineHead
+				);
+				return () => {
+					for (const letter of copyLineContent) {
+						if (isLineBreak(letter)) {
+							this.insertLine();
+							continue;
+						}
+						this.cursor.lineCursor.addLetter(this.cursor, letter);
+					}
+				};
+			}
+			next.prevLine = null;
+			this.editorHead = next;
+			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+			return () => {
+				for (const letter of copyLineContent) {
+					if (isLineBreak(letter)) {
+						this.insertLine();
+						continue;
+					}
+					this.cursor.lineCursor.addLetter(this.cursor, letter);
+				}
+			};
+		}
+
+		if (next == null) {
+			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+			prev.nextLine = null;
+			this.editorTail = prev;
+			return () => {
+				for (const letter of copyLineContent) {
+					if (isLineBreak(letter)) {
+						this.insertLine();
+						continue;
+					}
+					this.cursor.lineCursor.addLetter(this.cursor, letter);
+				}
+			};
+		}
+
+		this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+		prev.nextLine = next;
+		next.prevLine = prev;
+		return () => {
+			console.log(copyLineContent);
+			for (const letter of copyLineContent) {
+				if (isLineBreak(letter)) {
+					this.insertLine();
+					continue;
+				}
+				this.cursor.lineCursor.addLetter(this.cursor, letter);
+			}
+		};
 	}
 
 	getCursorPosition() {
@@ -110,22 +215,18 @@ class Editor {
 	}
 
 	moveCursorToNthLine(lineNo: number, textNo: number) {
-		this.selectionDetails.lineStart = lineNo;
-		this.selectionDetails.lineEnd = lineNo;
-		this.selectionDetails.letterStart = textNo;
-		this.selectionDetails.letterEnd = textNo;
 		let linePtr = this.editorHead;
 		while (lineNo--) {
 			if (linePtr.nextLine) linePtr = linePtr.nextLine;
 			else break;
 		}
-		this.cursor.lineCursor = linePtr;
+		this.cursor.setLineCursor = linePtr;
 		let letterPtr = this.cursor.lineCursor.lineHead;
 		while (textNo--) {
 			if (letterPtr.nextLetter) letterPtr = letterPtr.nextLetter;
 			else break;
 		}
-		this.cursor.letterCursor = letterPtr;
+		this.cursor.setLetterCursor = letterPtr;
 	}
 
 	updateLetterSelectionOnMouseMove(
@@ -271,8 +372,10 @@ class Editor {
 					);
 				}
 				if (isMetaKey) {
-					this.cursor.lineCursor = this.editorHead;
-					this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+					this.cursor.setCursor = {
+						line: this.editorHead,
+						letter: this.editorHead.lineHead,
+					};
 					return;
 				}
 				if (!this.cursor.lineCursor.prevLine) {
@@ -280,13 +383,13 @@ class Editor {
 					return;
 				}
 				let nextPos = this.getCursorPosition();
-				this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
+				this.cursor.setLineCursor = this.cursor.lineCursor.prevLine;
 				let temp: Letter | null = this.cursor.lineCursor.lineHead;
 				while (temp && nextPos--) {
 					temp = temp.nextLetter;
 				}
 				if (!temp) temp = this.cursor.lineCursor.lineTail;
-				this.cursor.letterCursor = temp;
+				this.cursor.setLetterCursor = temp;
 				break;
 			case 'ArrowDown':
 				if (isAltKey) {
@@ -327,8 +430,12 @@ class Editor {
 					);
 				}
 				if (isMetaKey) {
-					this.cursor.lineCursor = this.editorTail;
-					this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+					// this.cursor.lineCursor = this.editorTail;
+					// this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+					this.cursor.setCursor = {
+						line: this.editorTail,
+						letter: this.editorTail.lineHead,
+					};
 					return;
 				}
 				if (!this.cursor.lineCursor.nextLine) {
@@ -336,13 +443,13 @@ class Editor {
 					return;
 				}
 				let prevPos = this.getCursorPosition();
-				this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
+				this.cursor.setLineCursor = this.cursor.lineCursor.nextLine;
 				let temp1: Letter | null = this.cursor.lineCursor.lineHead;
 				while (temp1 && prevPos--) {
 					temp1 = temp1.nextLetter;
 				}
 				if (!temp1) temp1 = this.cursor.lineCursor.lineTail;
-				this.cursor.letterCursor = temp1;
+				this.cursor.setLetterCursor = temp1;
 				break;
 			case 'ArrowLeft':
 				if (isAltKey) {
@@ -352,7 +459,7 @@ class Editor {
 						this.moveCursor(
 							new KeyboardEvent('keydown', { key: 'ArrowUp' })
 						);
-						this.cursor.letterCursor =
+						this.cursor.setLetterCursor =
 							this.cursor.lineCursor.lineTail;
 						return;
 					}
@@ -364,10 +471,10 @@ class Editor {
 					}
 					// console.log(leftWhiteSpace)
 					if (!leftWhiteSpace) {
-						this.cursor.letterCursor =
+						this.cursor.setLetterCursor =
 							this.cursor.lineCursor.lineHead;
 					} else {
-						this.cursor.letterCursor = leftWhiteSpace;
+						this.cursor.setLetterCursor = leftWhiteSpace;
 					}
 					return;
 				}
@@ -380,20 +487,22 @@ class Editor {
 							if (temp) temp = temp.prevLetter;
 						}
 					}
-					this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+					this.cursor.setLetterCursor =
+						this.cursor.lineCursor.lineHead;
 					return;
 				}
 				if (!this.cursor.letterCursor.prevLetter) {
 					// if there is no previous letter, don't do anything
 					if (this.cursor.lineCursor.prevLine) {
-						this.cursor.lineCursor =
+						this.cursor.setLineCursor =
 							this.cursor.lineCursor.prevLine;
-						this.cursor.letterCursor =
+						this.cursor.setLetterCursor =
 							this.cursor.lineCursor.lineTail;
 					}
 					return;
 				}
-				this.cursor.letterCursor = this.cursor.letterCursor.prevLetter;
+				this.cursor.setLetterCursor =
+					this.cursor.letterCursor.prevLetter;
 				break;
 			case 'ArrowRight':
 				if (isAltKey) {
@@ -403,7 +512,7 @@ class Editor {
 						this.moveCursor(
 							new KeyboardEvent('keydown', { key: 'ArrowDown' })
 						);
-						this.cursor.letterCursor =
+						this.cursor.setLetterCursor =
 							this.cursor.lineCursor.lineHead;
 						return;
 					}
@@ -414,10 +523,10 @@ class Editor {
 						rightWhiteSpace = rightWhiteSpace.nextLetter;
 					}
 					if (!rightWhiteSpace) {
-						this.cursor.letterCursor =
+						this.cursor.setLetterCursor =
 							this.cursor.lineCursor.lineTail;
 					} else {
-						this.cursor.letterCursor = rightWhiteSpace;
+						this.cursor.setLetterCursor = rightWhiteSpace;
 					}
 					return;
 				}
@@ -430,26 +539,28 @@ class Editor {
 							if (temp) temp = temp.nextLetter;
 						}
 					}
-					this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+					this.cursor.setLetterCursor =
+						this.cursor.lineCursor.lineTail;
 					return;
 				}
 				if (!this.cursor.letterCursor.nextLetter) {
 					// if there is no next letter, don't do anything
 					if (this.cursor.lineCursor.nextLine) {
-						this.cursor.lineCursor =
-							this.cursor.lineCursor.nextLine;
-						this.cursor.letterCursor =
-							this.cursor.lineCursor.lineHead;
+						this.cursor.setCursor = {
+							line: this.cursor.lineCursor.nextLine,
+							letter: this.cursor.lineCursor.lineHead,
+						};
 					}
 					return;
 				}
-				this.cursor.letterCursor = this.cursor.letterCursor.nextLetter;
+				this.cursor.setLetterCursor =
+					this.cursor.letterCursor.nextLetter;
 				break;
 			case 'Home':
-				this.cursor.letterCursor = this.cursor.lineCursor.lineHead;
+				this.cursor.setLetterCursor = this.cursor.lineCursor.lineHead;
 				break;
 			case 'End':
-				this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+				this.cursor.setLetterCursor = this.cursor.lineCursor.lineTail;
 				break;
 			default:
 				console.log('No action to be performed');
@@ -481,8 +592,10 @@ class Editor {
 					temp = temp.nextLetter;
 				}
 				// temp = this.cursor.lineCursor.lineTail;
-				this.cursor.lineCursor = this.cursor.lineCursor.prevLine;
-				this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+				this.cursor.setCursor = {
+					line: this.cursor.lineCursor.prevLine,
+					letter: this.cursor.lineCursor.lineTail,
+				};
 				temp = this.cursor.lineCursor.lineHead;
 				while (temp && nextPos--) {
 					temp = temp.nextLetter;
@@ -493,7 +606,7 @@ class Editor {
 					temp = temp.nextLetter;
 				}
 				if (cursorPos) {
-					this.cursor.letterCursor = cursorPos;
+					this.cursor.setLetterCursor = cursorPos;
 				}
 				break;
 			case 'ArrowDown':
@@ -519,8 +632,10 @@ class Editor {
 					temp1 = temp1.nextLetter;
 				}
 				// temp1 = this.cursor.lineCursor.lineTail;
-				this.cursor.lineCursor = this.cursor.lineCursor.nextLine;
-				this.cursor.letterCursor = this.cursor.lineCursor.lineTail;
+				this.cursor.setCursor = {
+					line: this.cursor.lineCursor.nextLine,
+					letter: this.cursor.lineCursor.lineTail,
+				};
 				temp1 = this.cursor.lineCursor.lineHead;
 				while (temp1 && prevPos--) {
 					temp1.isSelected = !temp1.isSelected;
@@ -528,7 +643,7 @@ class Editor {
 				}
 				if (temp1) {
 					temp1 = temp1.prevLetter;
-					if (temp1) this.cursor.letterCursor = temp1;
+					if (temp1) this.cursor.setLetterCursor = temp1;
 				}
 				break;
 			case 'ArrowLeft':
@@ -558,10 +673,6 @@ class Editor {
 						}
 					}
 				} else {
-					// if (this.cursor.letterCursor.isSelected) {
-					//   this.selectionDetails.letterEnd -= 1;
-					// } else
-					this.selectionDetails.letterStart -= 1;
 					this.cursor.letterCursor.isSelected =
 						!this.cursor.letterCursor.isSelected;
 					this.moveCursor(
@@ -601,10 +712,6 @@ class Editor {
 					}
 				} else {
 					this.selectionMode = true;
-					// if (this.cursor.letterCursor.isSelected) {
-					//   this.selectionDetails.letterStart += 1;
-					// } else
-					this.selectionDetails.letterEnd += 1;
 					this.moveCursor(
 						new KeyboardEvent('keydown', {
 							key: 'ArrowRight',
@@ -618,40 +725,6 @@ class Editor {
 			default:
 				console.log('No action to be performed');
 		}
-	}
-
-	deleteLines(start: Line, end: Line) {
-		const prev = start.prevLine;
-		const next = end.nextLine;
-		if (prev == null) {
-			start.nextLine = next;
-			if (!next) {
-				this.editorHead = new Line(
-					this.cursor.lineCursor.lineIndex + 1
-				); // sential line node
-				this.editorTail = this.editorHead;
-				this.cursor = new Cursor(
-					this.editorHead,
-					this.editorHead.lineHead
-				);
-				return;
-			}
-			next.prevLine = null;
-			this.editorHead = next;
-			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-			return;
-		}
-
-		if (next == null) {
-			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-			prev.nextLine = null;
-			this.editorTail = prev;
-			return;
-		}
-
-		this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-		prev.nextLine = next;
-		next.prevLine = prev;
 	}
 
 	resetSelection() {
@@ -712,7 +785,7 @@ class Editor {
 					this.cursor.lineCursor
 				);
 			} else if (start && end) {
-				this.cursor.lineCursor.deleteLetters(this.cursor, start, end);
+				this.cursor.lineCursor.deleteLetters(start, end);
 			}
 		} else {
 			const nextLine = linePtr.nextLine;
@@ -758,7 +831,7 @@ class Editor {
 					// this line needs to be connected to previous line
 					if (!startSelection) startSelection = linePtr;
 					else if (!endSelection) endSelection = linePtr;
-					linePtr.deleteLetters(this.cursor, start, end);
+					linePtr.deleteLetters(start, end);
 					console.log('delete part of the line');
 				}
 				if (currLineTxt) currLineTxt += '\n';
@@ -770,25 +843,29 @@ class Editor {
 					copyText = currLineTxt + copyText;
 				}
 				if (linePtr) {
-					this.cursor.lineCursor = linePtr;
-					this.cursor.letterCursor = linePtr?.lineHead;
+					this.cursor.setCursor = {
+						line: linePtr,
+						letter: linePtr.lineHead,
+					};
 				}
 			}
 			if (startSelection && endSelection) {
 				if (isNextline) {
-					this.cursor.lineCursor = endSelection;
-					this.cursor.letterCursor = endSelection?.lineHead;
+					this.cursor.setCursor = {
+						line: endSelection,
+						letter: endSelection?.lineHead,
+					};
 					startSelection.deleteLetters(
-						this.cursor,
 						endSelection.lineHead,
 						endSelection.lineHead
 					);
 					startSelection.lineTail = endSelection.lineTail;
 				} else {
-					this.cursor.lineCursor = startSelection;
-					this.cursor.letterCursor = startSelection?.lineHead;
+					this.cursor.setCursor = {
+						line: startSelection,
+						letter: startSelection?.lineHead,
+					};
 					startSelection.deleteLetters(
-						this.cursor,
 						startSelection.lineHead,
 						startSelection.lineHead
 					);
@@ -831,7 +908,7 @@ class Editor {
 					this.cursor.lineCursor
 				);
 			} else if (start && end) {
-				this.cursor.lineCursor.deleteLetters(this.cursor, start, end);
+				this.cursor.lineCursor.deleteLetters(start, end);
 			}
 		} else {
 			const nextLine = linePtr.nextLine;
@@ -877,7 +954,7 @@ class Editor {
 					// this line needs to be connected to previous line
 					if (!startSelection) startSelection = linePtr;
 					else if (!endSelection) endSelection = linePtr;
-					linePtr.deleteLetters(this.cursor, start, end);
+					linePtr.deleteLetters(start, end);
 					console.log('delete part of the line');
 				}
 				if (currLineTxt) currLineTxt += '\n';
@@ -887,25 +964,29 @@ class Editor {
 					linePtr = linePtr.prevLine;
 				}
 				if (linePtr) {
-					this.cursor.lineCursor = linePtr;
-					this.cursor.letterCursor = linePtr?.lineHead;
+					this.cursor.setCursor = {
+						line: linePtr,
+						letter: linePtr?.lineHead,
+					};
 				}
 			}
 			if (startSelection && endSelection) {
 				if (isNextline) {
-					this.cursor.lineCursor = endSelection;
-					this.cursor.letterCursor = endSelection?.lineHead;
+					this.cursor.setCursor = {
+						line: endSelection,
+						letter: endSelection?.lineHead,
+					};
 					startSelection.deleteLetters(
-						this.cursor,
 						endSelection.lineHead,
 						endSelection.lineHead
 					);
 					startSelection.lineTail = endSelection.lineTail;
 				} else {
-					this.cursor.lineCursor = startSelection;
-					this.cursor.letterCursor = startSelection?.lineHead;
+					this.cursor.setCursor = {
+						line: startSelection,
+						letter: startSelection?.lineHead,
+					};
 					startSelection.deleteLetters(
-						this.cursor,
 						startSelection.lineHead,
 						startSelection.lineHead
 					);
@@ -942,6 +1023,9 @@ class Editor {
 		let linePtr: Line | null = this.cursor.lineCursor;
 		let startSelection = null,
 			endSelection = null;
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+		const undoOps: Function[] = [];
+		// let stringToBeDeleted = "";
 		if (!isMultiLineSelected) {
 			// single line selection
 			let letterPtr: Letter | null = this.cursor.lineCursor.lineHead;
@@ -963,12 +1047,14 @@ class Editor {
 				this.cursor.lineCursor.lineHead.isSelected &&
 				this.cursor.lineCursor.lineTail.isSelected
 			) {
-				this.deleteLines(
+				const ops = this.deleteLines(
 					this.cursor.lineCursor,
 					this.cursor.lineCursor
 				);
+				undoOps.push(ops);
 			} else if (start && end) {
-				this.cursor.lineCursor.deleteLetters(this.cursor, start, end);
+				const ops = this.cursor.lineCursor.deleteLetters(start, end);
+				undoOps.push(ops);
 			}
 		} else {
 			const nextLine = linePtr.nextLine;
@@ -1007,12 +1093,14 @@ class Editor {
 					console.log('delete full line');
 					// if (!startSelection) startSelection = linePtr;
 					// else if (!endSelection) endSelection = linePtr;
-					this.deleteLines(linePtr, linePtr);
+					const ops = this.deleteLines(linePtr, linePtr);
+					undoOps.push(ops);
 				} else if (start && end) {
 					// this line needs to be connected to previous line
 					if (!startSelection) startSelection = linePtr;
 					else if (!endSelection) endSelection = linePtr;
-					linePtr.deleteLetters(this.cursor, start, end);
+					const ops = linePtr.deleteLetters(start, end);
+					undoOps.push(ops);
 					console.log('delete part of the line');
 				}
 				if (isNextline) {
@@ -1021,32 +1109,96 @@ class Editor {
 					linePtr = linePtr.prevLine;
 				}
 				if (linePtr) {
-					this.cursor.lineCursor = linePtr;
-					this.cursor.letterCursor = linePtr?.lineHead;
+					this.cursor.setCursor = {
+						line: linePtr,
+						letter: linePtr.lineHead,
+					};
 				}
 			}
 			if (startSelection && endSelection) {
 				if (isNextline) {
-					this.cursor.lineCursor = endSelection;
-					this.cursor.letterCursor = endSelection?.lineHead;
-					startSelection.deleteLetters(
-						this.cursor,
-						endSelection.lineHead,
-						endSelection.lineHead
+					this.cursor.setCursor = {
+						line: endSelection,
+						letter: endSelection.lineHead,
+					};
+					undoOps.push(
+						startSelection.deleteLetters(
+							endSelection.lineHead,
+							endSelection.lineHead
+						)
 					);
 					startSelection.lineTail = endSelection.lineTail;
 				} else {
-					this.cursor.lineCursor = startSelection;
-					this.cursor.letterCursor = startSelection?.lineHead;
-					startSelection.deleteLetters(
-						this.cursor,
-						startSelection.lineHead,
-						startSelection.lineHead
+					this.cursor.setCursor = {
+						line: startSelection,
+						letter: startSelection.lineHead,
+					};
+					undoOps.push(
+						startSelection.deleteLetters(
+							startSelection.lineHead,
+							startSelection.lineHead
+						)
 					);
 					endSelection.lineTail = startSelection.lineTail;
 				}
 			}
+			this.selectionMode = false;
 		}
+
+		return () => {
+			for (const func of undoOps) {
+				func();
+			}
+			// store the selected characters
+			// on undo, just do the paste logic from the cursor position
+		};
+	}
+
+	deleteWords() {
+		let leftWhiteSpace = this.cursor.letterCursor;
+		while (leftWhiteSpace && leftWhiteSpace.text !== '') {
+			if (leftWhiteSpace.prevLetter) {
+				leftWhiteSpace = leftWhiteSpace.prevLetter;
+			}
+			if (!leftWhiteSpace) break;
+			if (
+				leftWhiteSpace.text === '' ||
+				isSpecialCharacter(leftWhiteSpace.text)
+			) {
+				if (leftWhiteSpace.nextLetter) {
+					leftWhiteSpace = leftWhiteSpace.nextLetter;
+				}
+				break;
+			}
+		}
+		this.cursor.lineCursor.deleteLetters(
+			leftWhiteSpace,
+			this.cursor.letterCursor
+		);
+	}
+
+	async paste() {
+		const textContent = await navigator.clipboard.readText();
+		for (const letter of textContent) {
+			if (isLineBreak(letter)) {
+				this.insertLine();
+				continue;
+			}
+			this.cursor.lineCursor.addLetter(this.cursor, letter);
+		}
+	}
+
+	cut() {
+		// cut a line and copy it's content to clipboard
+		let currLineHead: Letter | null = this.cursor.lineCursor.lineHead;
+		let text = '';
+		while (currLineHead) {
+			text += currLineHead.text;
+			currLineHead = currLineHead.nextLetter;
+		}
+
+		navigator.clipboard.writeText(text);
+		this.deleteLines(this.cursor.lineCursor, this.cursor.lineCursor);
 	}
 
 	map(cb: (lineText: string, index: number) => ReactNode): Array<ReactNode> {
@@ -1054,242 +1206,13 @@ class Editor {
 		let editorHeadPtr: Line | null = this.editorHead;
 
 		while (editorHeadPtr) {
-			const currLineText = editorHeadPtr.map(
-				editorHeadPtr,
-				this.cursor,
-				this
-			);
+			const currLineText = editorHeadPtr.map(editorHeadPtr);
 			const htmlRenderedLine = cb(currLineText, renderedLines.length);
 			renderedLines.push(htmlRenderedLine);
 			editorHeadPtr = editorHeadPtr.nextLine;
 		}
 
 		return renderedLines;
-	}
-
-	isCursorMoveEvent(event: KeyboardEvent) {
-		const events = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-		return events.includes(event.key);
-	}
-
-	isIgnorableKeys(event: KeyboardEvent) {
-		const events = [
-			'Shift',
-			'Meta',
-			'Alt',
-			'Control',
-			'Escape',
-			'CapsLock',
-		];
-		return events.includes(event.key);
-	}
-
-	isKeyboardShortcut(event: KeyboardEvent) {
-		if (event.metaKey || event.ctrlKey) {
-			if (event.key == 'c') {
-				return true;
-			}
-			if (event.key == 'v') {
-				return true;
-			}
-			if (event.key == 'x') {
-				return true;
-			}
-			if (this.isCursorMoveEvent(event)) {
-				return true;
-			}
-			if (event.key === 'a') {
-				return true;
-			}
-			if (event.key === 'z') {
-				return true;
-			}
-			if (event.key === 'Backspace') {
-				return true;
-			}
-		} else if (event.shiftKey) {
-			if (event.key === 'ArrowLeft') {
-				return true;
-			}
-			if (event.key === 'ArrowRight') {
-				return true;
-			}
-			if (event.key === 'ArrowUp') {
-				return true;
-			}
-			if (event.key === 'ArrowDown') {
-				return true;
-			}
-			if (event.key === 'z') {
-				return true;
-			}
-		} else if (event.key === 'Home') {
-			return true;
-		} else if (event.key === 'End') {
-			return true;
-		} else if (event.altKey) {
-			if (this.isCursorMoveEvent(event)) {
-				return true;
-			}
-			if (event.key === 'Backspace') {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	handleTimeTravel(event: KeyboardEvent) {
-		if (!this.undoRedoBuffer || !this.undoRedoBuffer.length) {
-			console.log('undo/redo buffer empty');
-			return;
-		}
-		if (event.shiftKey) {
-			// handle redo
-			return;
-		}
-		// undo
-		const previousEditorRef = this.undoRedoBuffer.at(-1);
-		if (!previousEditorRef) {
-			return;
-		}
-
-		this.editorHead = previousEditorRef.editorHead;
-		this.editorTail = previousEditorRef.editorTail;
-		this.cursor = previousEditorRef.cursor;
-		this.cursor = previousEditorRef.cursor;
-		this.selectionMode = previousEditorRef.selectionMode;
-		this.selectionDetails = previousEditorRef.selectionDetails;
-		this.undoRedoBuffer = previousEditorRef.undoRedoBuffer;
-	}
-
-	async handleKeyboardShortcuts(cb: () => void, event: KeyboardEvent) {
-		return new Promise(async (resolve) => {
-			if (event.metaKey || event.ctrlKey) {
-				if (event.key == 'c') {
-					this.copySelection();
-					cb();
-					resolve('Success');
-				} else if (event.key == 'v') {
-					// paste content from clipboard
-					if (this.selectionMode) {
-						await this.pasteOnSelection();
-						cb();
-						resolve('Success');
-						return;
-					}
-					const textContent = await navigator.clipboard.readText();
-					for (const letter of textContent) {
-						if (isLineBreak(letter)) {
-							this.insertLine();
-							continue;
-						}
-						this.cursor.lineCursor.addLetter(this.cursor, letter);
-					}
-					cb();
-					resolve('Success');
-				} else if (event.key == 'x') {
-					if (this.selectionMode) {
-						this.cutSelection();
-						cb();
-						resolve('Success');
-						return;
-					}
-					let currLineHead: Letter | null =
-						this.cursor.lineCursor.lineHead;
-					let text = '';
-					while (currLineHead) {
-						text += currLineHead.text;
-						currLineHead = currLineHead.nextLetter;
-					}
-					navigator.clipboard.writeText(text);
-					this.deleteLines(
-						this.cursor.lineCursor,
-						this.cursor.lineCursor
-					);
-					cb();
-					resolve('Success');
-				} else if (this.isCursorMoveEvent(event)) {
-					this.resetSelection();
-					this.moveCursor(
-						event,
-						event.altKey,
-						event.metaKey || event.ctrlKey
-					);
-					cb();
-					resolve('Success');
-				} else if (event.key === 'a') {
-					this.updateLetterSelectionOnMouseMove(
-						0,
-						1000,
-						0,
-						100,
-						'UP'
-					);
-					cb();
-					resolve('Success');
-				} else if (event.key === 'z') {
-					this.handleTimeTravel(event);
-					cb();
-					resolve('success');
-				} else if (event.key === 'Backspace') {
-					// delete the entire line
-					const line = this.cursor.lineCursor;
-					line.lineHead.nextLetter = line.lineTail.nextLetter;
-					line.lineTail.prevLetter = line.lineHead;
-					line.lineTail = line.lineHead;
-					this.cursor.letterCursor = line.lineHead;
-					cb();
-					resolve('success');
-				}
-			} else if (event.shiftKey) {
-				if (this.isCursorMoveEvent(event)) {
-					this.updateLetterSelection(event);
-				}
-				cb();
-				resolve('success');
-			} else if (event.key === 'Home' || event.key === 'End') {
-				this.resetSelection();
-				this.moveCursor(event);
-				cb();
-				resolve('Success');
-			} else if (event.altKey) {
-				if (event.key === 'Backspace') {
-					// delete letters between white space
-					let leftWhiteSpace = this.cursor.letterCursor;
-					while (leftWhiteSpace && leftWhiteSpace.text !== '') {
-						if (leftWhiteSpace.prevLetter) {
-							leftWhiteSpace = leftWhiteSpace.prevLetter;
-						}
-						if (!leftWhiteSpace) break;
-						if (
-							leftWhiteSpace.text === '' ||
-							leftWhiteSpace.text === ' '
-						) {
-							if (leftWhiteSpace.nextLetter) {
-								leftWhiteSpace = leftWhiteSpace.nextLetter;
-							}
-							break;
-						}
-					}
-					this.cursor.lineCursor.deleteLetters(
-						this.cursor,
-						leftWhiteSpace,
-						this.cursor.letterCursor
-					);
-					cb();
-					resolve('Success');
-					return;
-				}
-				this.resetSelection();
-				this.moveCursor(
-					event,
-					event.altKey,
-					event.metaKey || event.ctrlKey
-				);
-				cb();
-				resolve('Success');
-			}
-		});
 	}
 }
 
