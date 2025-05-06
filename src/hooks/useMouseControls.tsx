@@ -37,7 +37,7 @@ export default function useMouseControls(
 			let charWidth = clientX / 12;
 			charWidth = parseInt(charWidth.toString());
 			const textNo = charWidth;
-			console.log(targetNode, parentNode)
+
 			let lineNo = -1;
 			if (!parentNode.id && targetNode.id.split('_')[0] === 'line') {
 				lineNo = parseInt(targetNode.id.split('_')[1]);
