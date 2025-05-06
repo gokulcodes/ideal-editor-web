@@ -4,6 +4,6 @@ export function isLineBreak(character: string): boolean {
 }
 
 export function isSpecialCharacter(character: string): boolean {
-	const regex = RegExp(/[^a-zA-Z0-9 ]/g);
+	const regex = RegExp(/[^a-zA-Z0-9]/g);
 	return regex.test(character);
 }

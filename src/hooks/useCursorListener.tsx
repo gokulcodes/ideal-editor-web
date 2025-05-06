@@ -11,8 +11,10 @@ export default function useCursorListener(
 		const activeCursor = document.getElementById('activeCursor');
 		const geometry = activeCursor?.getBoundingClientRect();
 		if (geometry) {
-			const cursorLeftPos = geometry.left + geometry.width,
-				cursorTopPos = geometry.top + editorRef.scrollTop,
+			const cursorLeftPos =
+					geometry.left - editorRef.offsetLeft + geometry.width,
+				cursorTopPos =
+					geometry.top - editorRef.offsetTop + editorRef.scrollTop,
 				cursorHeight = geometry.height;
 
 			cursorRef.style.left = `${cursorLeftPos}px`;

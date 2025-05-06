@@ -19,19 +19,21 @@ export default function useMouseControls(
 	const handleClick = useCallback(
 		(event: MouseEvent) => {
 			if (mouseMoveInfo.current.hasMoved) {
-				mouseMoveInfo.current = moveInitState; // reset mouse movement after click
+				mouseMoveInfo.current.hasMoved = false; // reset mouse movement after click
+				mouseMoveInfo.current.offsetX = 0; // reset mouse movement after click
+				mouseMoveInfo.current.offsetY = 0; // reset mouse movement after click
 				return;
 			}
 
 			editor.resetSelection();
-			if (!event || !event.target) {
+			if (!event || !event.target || !editorRef) {
 				return;
 			}
 			const targetNode = event.target as HTMLElement;
 			const parentNode = targetNode.parentNode as HTMLElement;
 
 			// curser letter position calculation. This improved the overall editor performance by 20x
-			const clientX = event.clientX;
+			const clientX = event.clientX - editorRef.offsetLeft;
 			let charWidth = clientX / 12;
 			charWidth = parseInt(charWidth.toString());
 			const textNo = charWidth;
@@ -45,7 +47,7 @@ export default function useMouseControls(
 			editor.moveCursorToNthLine(lineNo, textNo);
 			dispatch({ type: 'type', payload: editor });
 		},
-		[dispatch, editor]
+		[dispatch, editorRef, editor]
 	);
 
 	const handleMouseDown = useCallback(

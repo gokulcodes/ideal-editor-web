@@ -1,5 +1,5 @@
 import { isLineBreak } from './editorUtils';
-import Editor, { Cursor } from './IdealEditor';
+import Editor from './IdealEditor';
 import Letter from './Letter';
 
 class Line {
@@ -21,10 +21,10 @@ class Line {
 	 * @param cursor
 	 * @param value
 	 */
-	addLetter(cursor: Cursor, value: string) {
+	addLetter(value: string) {
 		const newLetter = new Letter(value);
 
-		const letterPosition = cursor.letterCursor;
+		const letterPosition = this.editor.cursor.letterCursor;
 
 		// letterPosition can never be null because of our sentinal node
 		// Beginning of the line
@@ -38,14 +38,17 @@ class Line {
 		if (nextAvailableLetter) nextAvailableLetter.prevLetter = newLetter;
 		if (newLetter.nextLetter == null) {
 			// End of the line
-			cursor.lineCursor.lineTail = newLetter;
+			this.editor.cursor.lineCursor.lineTail = newLetter;
 		}
 
 		// After adding a new letter, update the cursor position
-		cursor.setLetterCursor = newLetter;
+		this.editor.cursor.setLetterCursor = newLetter;
 
 		return () => {
-			this.deleteLetters(cursor.letterCursor, cursor.letterCursor);
+			this.deleteLetters(
+				this.editor.cursor.letterCursor,
+				this.editor.cursor.letterCursor
+			);
 		};
 	}
 
@@ -77,13 +80,12 @@ class Line {
 			if (!prevToCurrLine) {
 				// If it's editorHead node, don't make any move
 				return () => {
-					console.log(stringToBeDeleted);
 					for (const letter of stringToBeDeleted) {
 						if (isLineBreak(letter)) {
 							this.editor.insertLine();
 							continue;
 						}
-						this.addLetter(this.editor.cursor, letter);
+						this.addLetter(letter);
 					}
 				};
 			}
@@ -107,13 +109,12 @@ class Line {
 				letter: nextAvailableLetter,
 			};
 			return () => {
-				console.log(stringToBeDeleted);
 				for (const letter of stringToBeDeleted) {
 					if (isLineBreak(letter)) {
 						this.editor.insertLine();
 						continue;
 					}
-					this.addLetter(this.editor.cursor, letter);
+					this.addLetter(letter);
 				}
 			};
 		}
@@ -125,15 +126,13 @@ class Line {
 			prevToStart.nextLetter = null;
 			this.editor.cursor.lineCursor.lineTail = prevToStart;
 			this.editor.cursor.setLetterCursor = prevToStart;
-			console.log('delete', this.editor);
 			return () => {
-				console.log(stringToBeDeleted);
 				for (const letter of stringToBeDeleted) {
 					if (isLineBreak(letter)) {
 						this.editor.insertLine();
 						continue;
 					}
-					this.addLetter(this.editor.cursor, letter);
+					this.addLetter(letter);
 				}
 			};
 		}
@@ -144,13 +143,12 @@ class Line {
 		this.editor.cursor.setLetterCursor = prevToStart;
 
 		return () => {
-			console.log(stringToBeDeleted);
 			for (const letter of stringToBeDeleted) {
 				if (isLineBreak(letter)) {
 					this.editor.insertLine();
 					continue;
 				}
-				this.addLetter(this.editor.cursor, letter);
+				this.addLetter(letter);
 			}
 		};
 	}
