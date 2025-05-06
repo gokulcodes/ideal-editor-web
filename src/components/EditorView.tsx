@@ -80,7 +80,6 @@ export default function EditorView() {
 
 	return (
 		<div
-			id="editor"
 			ref={editorRef}
 			autoFocus
 			tabIndex={0}

@@ -37,13 +37,14 @@ export default function useMouseControls(
 			let charWidth = clientX / 12;
 			charWidth = parseInt(charWidth.toString());
 			const textNo = charWidth;
-
-			let lineNo = 0;
-			if (!parentNode.id || parentNode.id === 'editor') {
+			console.log(targetNode, parentNode)
+			let lineNo = -1;
+			if (!parentNode.id && targetNode.id.split('_')[0] === 'line') {
 				lineNo = parseInt(targetNode.id.split('_')[1]);
-			} else {
+			} else if (parentNode.id.split('_')[0] === 'line') {
 				lineNo = parseInt(parentNode.id.split('_')[1]);
 			}
+			if (lineNo === -1) return;
 			editor.moveCursorToNthLine(lineNo, textNo);
 			dispatch({ type: 'type', payload: editor });
 		},
