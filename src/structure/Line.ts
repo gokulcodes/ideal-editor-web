@@ -1,4 +1,5 @@
-import Editor, { Cursor } from './IdealEditor';
+import { isLineBreak } from './editorUtils';
+import Editor from './IdealEditor';
 import Letter from './Letter';
 
 class Line {
@@ -6,13 +7,13 @@ class Line {
 	lineTail: Letter; // End of the individual line[Don't confuse it with editorTail]
 	nextLine: Line | null;
 	prevLine: Line | null;
-	lineIndex: number;
-	constructor(lineIndex: number = 0) {
+	editor: Editor;
+	constructor(editor: Editor) {
 		this.lineHead = new Letter(''); // sentinal letter node
 		this.lineTail = this.lineHead;
 		this.nextLine = null;
 		this.prevLine = null;
-		this.lineIndex = lineIndex;
+		this.editor = editor;
 	}
 
 	/**
@@ -20,13 +21,10 @@ class Line {
 	 * @param cursor
 	 * @param value
 	 */
-	addLetter(cursor: Cursor, value: string) {
-		const newLetter = new Letter(
-			value,
-			cursor.letterCursor.letterIndex + 1
-		);
+	addLetter(value: string) {
+		const newLetter = new Letter(value);
 
-		const letterPosition = cursor.letterCursor;
+		const letterPosition = this.editor.cursor.letterCursor;
 
 		// letterPosition can never be null because of our sentinal node
 		// Beginning of the line
@@ -40,11 +38,18 @@ class Line {
 		if (nextAvailableLetter) nextAvailableLetter.prevLetter = newLetter;
 		if (newLetter.nextLetter == null) {
 			// End of the line
-			cursor.lineCursor.lineTail = newLetter;
+			this.editor.cursor.lineCursor.lineTail = newLetter;
 		}
 
 		// After adding a new letter, update the cursor position
-		cursor.letterCursor = newLetter;
+		this.editor.cursor.setLetterCursor = newLetter;
+
+		return () => {
+			this.deleteLetters(
+				this.editor.cursor.letterCursor,
+				this.editor.cursor.letterCursor
+			);
+		};
 	}
 
 	/**
@@ -52,22 +57,37 @@ class Line {
 	 * @param startPosition
 	 * @param endPosition
 	 */
-	deleteLetters(cursor: Cursor, startPosition: Letter, endPosition: Letter) {
+	deleteLetters(startPosition: Letter, endPosition: Letter) {
 		const prevToStart = startPosition.prevLetter;
 		const nextToEnd = endPosition.nextLetter;
+		let stringToBeDeleted = '',
+			temp: Letter | null = startPosition;
+		while (temp && temp != endPosition.nextLetter) {
+			stringToBeDeleted += temp.text;
+			if (!temp.nextLetter) stringToBeDeleted += '\n';
+			temp = temp.nextLetter;
+		}
 		/**
 		 * What if prevToStart is Sential Node?
 		 */
 		if (!prevToStart) {
 			// Sentinal node deletion
 			const nextAvailableLetter = startPosition;
-			const currentLine = cursor.lineCursor;
+			const currentLine = this.editor.cursor.lineCursor;
 			const prevToCurrLine = currentLine.prevLine;
 			const nextToCurrLine = currentLine.nextLine;
 
 			if (!prevToCurrLine) {
 				// If it's editorHead node, don't make any move
-				return;
+				return () => {
+					for (const letter of stringToBeDeleted) {
+						if (isLineBreak(letter)) {
+							this.editor.insertLine();
+							continue;
+						}
+						this.addLetter(letter);
+					}
+				};
 			}
 			const prevToCurrLineTail = prevToCurrLine.lineTail;
 			prevToCurrLine.lineTail.nextLetter = nextAvailableLetter; // move to remaining letters from currLine to prevLine's tailNode
@@ -84,9 +104,19 @@ class Line {
 			}
 
 			prevToCurrLine.lineTail = nextAvailableLetter;
-			cursor.lineCursor = prevToCurrLine;
-			cursor.letterCursor = nextAvailableLetter;
-			return;
+			this.editor.cursor.setCursor = {
+				line: prevToCurrLine,
+				letter: nextAvailableLetter,
+			};
+			return () => {
+				for (const letter of stringToBeDeleted) {
+					if (isLineBreak(letter)) {
+						this.editor.insertLine();
+						continue;
+					}
+					this.addLetter(letter);
+				}
+			};
 		}
 
 		/**
@@ -94,26 +124,44 @@ class Line {
 		 */
 		if (!nextToEnd) {
 			prevToStart.nextLetter = null;
-			cursor.lineCursor.lineTail = prevToStart;
-			cursor.letterCursor = prevToStart;
-			return;
+			this.editor.cursor.lineCursor.lineTail = prevToStart;
+			this.editor.cursor.setLetterCursor = prevToStart;
+			return () => {
+				for (const letter of stringToBeDeleted) {
+					if (isLineBreak(letter)) {
+						this.editor.insertLine();
+						continue;
+					}
+					this.addLetter(letter);
+				}
+			};
 		}
 
 		prevToStart.nextLetter = nextToEnd;
 		nextToEnd.prevLetter = prevToStart;
 		// console.log(prevToStart)
-		cursor.letterCursor = prevToStart;
+		this.editor.cursor.setLetterCursor = prevToStart;
+
+		return () => {
+			for (const letter of stringToBeDeleted) {
+				if (isLineBreak(letter)) {
+					this.editor.insertLine();
+					continue;
+				}
+				this.addLetter(letter);
+			}
+		};
 	}
 
-	map(currLine: Line, cursor: Cursor, editor: Editor) {
+	map(currLine: Line) {
 		let lineText = '',
 			cnt = 0;
 		let letterHeadPtr: Letter | null = this.lineHead;
 		while (letterHeadPtr) {
-			if (editor.selectionMode && letterHeadPtr.isSelected) {
+			if (this.editor.selectionMode && letterHeadPtr.isSelected) {
 				let selectedText = '';
 				while (letterHeadPtr && letterHeadPtr.isSelected) {
-					if (cursor.letterCursor === letterHeadPtr) {
+					if (this.editor.cursor.letterCursor === letterHeadPtr) {
 						selectedText += `<span class="pointer-events-none" id="activeCursor"><span id=text_${cnt}>${letterHeadPtr.text}</span></span>`;
 					} else {
 						selectedText += `<span class="pointer-events-none" id=text_${cnt}>${letterHeadPtr.text}</span>`;
@@ -124,8 +172,8 @@ class Line {
 				lineText += `<span class="pointer-events-none selectedText">${selectedText}</span>`;
 				if (letterHeadPtr) letterHeadPtr = letterHeadPtr.prevLetter;
 			} else if (
-				cursor.lineCursor === currLine &&
-				cursor.letterCursor === letterHeadPtr
+				this.editor.cursor.lineCursor === currLine &&
+				this.editor.cursor.letterCursor === letterHeadPtr
 			) {
 				lineText += `<span class="pointer-events-none" id="activeCursor">${letterHeadPtr.text}</span>`;
 				// lineText +=

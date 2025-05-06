@@ -12,7 +12,7 @@ export type ActionType = {
 	payload: PayloadType;
 };
 
-interface EditorStateType {
+export interface EditorStateType {
 	editor: Editor;
 }
 
