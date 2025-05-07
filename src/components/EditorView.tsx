@@ -13,13 +13,14 @@ import React, {
 	useState,
 	// useState,
 } from 'react';
+import { fileType } from './sidebar/FileView';
 
 export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
 	const {
 		state: { selectedFileId },
 	} = useContext(idealContext);
-	const [currentContent, setCurrentContent] = useState({});
+	const [currentContent, setCurrentContent] = useState<fileType>();
 	const editor = state.editor;
 	const editorRef = useRef<HTMLDivElement>(null);
 	const cursorRef = useRef<HTMLDivElement>(null);
@@ -86,17 +87,21 @@ export default function EditorView() {
 		}
 		dispatch({ type: 'resetEditor', payload: editor });
 		setTimeout(() => {
-			let fileInfo = localStorage.getItem(selectedFileId);
+			const fileInfo = localStorage.getItem(selectedFileId);
 			if (!fileInfo) return;
-			fileInfo = JSON.parse(fileInfo);
-			setCurrentContent(fileInfo);
+
+			const parsedFileInfo: fileType = JSON.parse(fileInfo);
+			if (!parsedFileInfo) {
+				return;
+			}
+			setCurrentContent(parsedFileInfo);
 			// editorRef.current?.dispatchEvent(
 			// 	new KeyboardEvent('keydown', { key: 'a', metaKey: true })
 			// );
 			// editorRef.current?.dispatchEvent(
 			// 	new KeyboardEvent('keydown', { key: 'Backspace' })
 			// );
-			navigator.clipboard.writeText(fileInfo.name);
+			navigator.clipboard.writeText(parsedFileInfo.name);
 			editorRef.current?.dispatchEvent(
 				new KeyboardEvent('keydown', { key: 'v', metaKey: true })
 			);
@@ -107,7 +112,7 @@ export default function EditorView() {
 	return (
 		<>
 			<div className="my-20">
-				<h1 className="text-4xl font-bold">{currentContent.name}</h1>
+				<h1 className="text-4xl font-bold">{currentContent?.name}</h1>
 			</div>
 			<div
 				ref={editorRef}

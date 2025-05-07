@@ -3,7 +3,7 @@ import { FocusEvent, useContext, useEffect, useState } from 'react';
 import { CiFileOn, CiFolderOn } from 'react-icons/ci';
 import { v4 as uuid } from 'uuid';
 
-type fileType = {
+export type fileType = {
 	id: string;
 	name: string;
 	type: 'folder' | 'file';
