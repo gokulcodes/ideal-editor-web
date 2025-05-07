@@ -1,17 +1,18 @@
 'use client';
-import EditorView from '@/components/EditorView';
-import EditorContext, {
-	editorState,
-	reducer,
-} from '../controller/editorContext';
+
+import Sidebar from '@/components/sidebar';
+import Canvas from '@/components/canvas';
+import IdealContext, { initialState, reducer } from '@/controller/idealContext';
 import { useReducer } from 'react';
 
 export default function Home() {
-	const [state, dispatch] = useReducer(reducer, editorState);
-
+	const [state, dispatch] = useReducer(reducer, initialState);
 	return (
-		<EditorContext.Provider value={{ state, dispatch }}>
-			<EditorView />
-		</EditorContext.Provider>
+		<IdealContext.Provider value={{ state, dispatch }}>
+			{/* <div className='flex items-center justify-center'> */}
+			<Sidebar />
+			<Canvas />
+			{/* </div> */}
+		</IdealContext.Provider>
 	);
 }
