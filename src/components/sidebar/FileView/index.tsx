@@ -116,12 +116,13 @@ export default function FileView() {
 
 		localStorage.setItem(id, JSON.stringify(newfile));
 
-		const files = localStorage.getItem('files');
+		let files = localStorage.getItem('files');
 		if (!files) {
-			return;
+			files = '[]';
 		}
 		let parsedFiles = JSON.parse(files);
 		if (!parsedFiles) parsedFiles = [];
+
 		if (state.selectedFileId) {
 			const updatedFiles = [];
 			let fileInserted = false;
@@ -171,9 +172,10 @@ export default function FileView() {
 			type: 'folder',
 			name: event.target.value,
 		};
-		const files = localStorage.getItem('files');
+
+		let files = localStorage.getItem('files');
 		if (!files) {
-			return;
+			files = '[]';
 		}
 		let parsedFiles = JSON.parse(files);
 		if (!parsedFiles) parsedFiles = [];
