@@ -6,14 +6,16 @@
 
 :root {
 	--background: #ffffff;
-	--foreground: #1b1b1b;
+	--foreground: #0a0a0a;
 }
 
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--font-sans: 'Space Mono', sans-serif;
+	--font-editor: 'Space Mono', sans-serif;
+	--font-sans: 'Host Grotesk', sans-serif;
 	--animate-cursor: cursorBlink 0.8s infinite;
+	--animate-sidebarOpen: sidebarOpen 0.2s ease-in;
 	@keyframes cursorBlink {
 		0% {
 			opacity: 1;
@@ -32,11 +34,24 @@
 			transform-origin: center;
 		}
 	}
+	@keyframes sidebarOpen {
+		0% {
+			opacity: 0;
+			transform: scaleX(0);
+			transform-origin: left;
+		}
+		100% {
+			/* height: 10px; */
+			opacity: 1;
+			transform: scaleX(1);
+			transform-origin: left;
+		}
+	}
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--background: #1b1b1b;
+		--background: #0a0a0a;
 		--foreground: #ededed;
 	}
 }
@@ -44,17 +59,54 @@
 body {
 	background: var(--background);
 	color: var(--foreground);
-	font-family: 'Space Mono', sans-serif;
+	font-family: 'Host Grotesk', sans-serif;
 }
 
 .selectedText {
-	background-color: rgba(255, 255, 255, 0.269);
+	background-color: white;
 	padding-bottom: 4px;
+	color: black;
 }
 
-pre:has(#activeCursor) {
-	background-color: rgba(255, 255, 255, 0.05);
-	/* border-top: 0.5px solid rgba(255,255,255,0.08);
-	border-bottom: 0.5px solid rgba(255,255,255,0.08);
-	border-style: inset; */
+details {
+	/* padding: 10px 0px 10px 0px; */
+	border: 1px solid transparent;
 }
+details:hover {
+	/* background-color: rgba(255, 255, 255, 0); */
+	cursor: pointer;
+}
+
+summary::marker {
+	content: none;
+}
+
+summary::before {
+	/* content: url('/folder-closed.png'); */
+	content: '';
+	position: absolute;
+	top: 0px;
+	left: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 15px;
+	height: 15px;
+	filter: invert();
+	background-image: url('/folder-closed.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+details[open] summary::before {
+	/* content: '📂'; */
+	top: 20px;
+	/* content: url('/folder-open.png'); */
+	/* transform: rotate(90deg); */
+}
+
+/* pre:has(#activeCursor) {
+	background-color: rgba(255, 255, 255, 0.05);
+} */
+/* border-top: 0.5px solid rgba(255,255,255,0.08);
+border-bottom: 0.5px solid rgba(255,255,255,0.08);
+border-style: inset; */

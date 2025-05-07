@@ -79,6 +79,10 @@ export default function useKeyboardControls(
 							break;
 					}
 				} else if (shiftKey && isCursorMoveEvent(event)) {
+					// if (altKey) {
+					// duplicating lines
+					// 	return;
+					// }
 					editor.updateLetterSelection(event);
 				} else if (altKey) {
 					if (key === 'Backspace') {

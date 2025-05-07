@@ -16,7 +16,7 @@ export interface EditorStateType {
 	editor: Editor;
 }
 
-interface ContextType {
+export interface ContextType {
 	state: EditorStateType;
 	dispatch: React.Dispatch<ActionType>;
 }
@@ -28,6 +28,9 @@ export const reducer = (
 	switch (action.type) {
 		case 'type':
 			return { ...state, editor: action.payload };
+		case 'resetEditor':
+			console.log('editor initialized');
+			return { ...state, editor: new Editor() };
 	}
 	return state;
 };
