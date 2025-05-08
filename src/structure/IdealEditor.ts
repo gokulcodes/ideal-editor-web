@@ -13,13 +13,14 @@ class Editor {
 	undoOperations: [Function, Function][];
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	redoOperations: Function[];
-	constructor() {
+	constructor(content: string = '') {
 		this.editorHead = new Line(this); // sential line node
 		this.editorTail = this.editorHead;
 		this.cursor = new Cursor(this.editorHead, this.editorHead.lineHead);
 		this.selectionMode = false;
 		this.undoOperations = [];
 		this.redoOperations = [];
+		this.initializeEditorContent(content);
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -863,6 +864,37 @@ class Editor {
 			nthPosition++;
 		}
 		return nthPosition;
+	}
+
+	initializeEditorContent(content: string) {
+		for (const letter of content) {
+			if (isLineBreak(letter)) {
+				this.insertLine();
+				continue;
+			}
+			this.cursor.lineCursor.addLetter(letter);
+		}
+		// this.cursor.setCursor = {
+		// 	line: this.cursor.lineCursor,
+		// 	letter: this.cursor.letterCursor,
+		// };
+	}
+
+	get getAllContent() {
+		let head: Line | null = this.editorHead,
+			totalContent = '';
+		while (head) {
+			let letter: Letter | null = head.lineHead,
+				text = '';
+			while (letter) {
+				text += letter.text;
+				letter = letter.nextLetter;
+			}
+			text += '\n';
+			totalContent += text;
+			head = head.nextLine;
+		}
+		return totalContent;
 	}
 
 	/** Mouse Operations */

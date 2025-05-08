@@ -1,3 +1,4 @@
+import { fileType } from '@/components/sidebar/FileView';
 import { createContext } from 'react';
 
 export const initialState = {
@@ -5,6 +6,7 @@ export const initialState = {
 	newFileCreate: false,
 	newFolderCreate: false,
 	selectedFileId: '',
+	files: [],
 };
 
 type idealContextType = {
@@ -12,6 +14,7 @@ type idealContextType = {
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
 	selectedFileId: string;
+	files: fileType[];
 };
 
 export type ActionType = {
@@ -37,6 +40,11 @@ export const reducer = (
 			return {
 				...state,
 				selectedFileId: action.payload.selectedFileId,
+			};
+		case 'fileUpdate':
+			return {
+				...state,
+				files: action.payload.files,
 			};
 		default:
 			return state;

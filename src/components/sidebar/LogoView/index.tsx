@@ -1,5 +1,6 @@
 import idealContext from '@/controller/idealContext';
 import { useContext } from 'react';
+import { TbLayoutSidebarLeftCollapse } from 'react-icons/tb';
 import { VscNewFile, VscNewFolder } from 'react-icons/vsc';
 
 export default function LogoView() {
@@ -38,6 +39,12 @@ export default function LogoView() {
 					className="p-2 cursor-pointer hover:bg-white/5 border border-white/10 rounded-sm"
 				>
 					<VscNewFolder />
+				</button>
+				<button
+					onClick={openFolderCreate}
+					className="p-2 cursor-pointer hover:bg-white/5 border border-white/10 rounded-sm"
+				>
+					<TbLayoutSidebarLeftCollapse />
 				</button>
 			</div>
 		</div>

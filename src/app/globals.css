@@ -70,8 +70,14 @@ body {
 
 details {
 	/* padding: 10px 0px 10px 0px; */
+	transition: 200ms;
 	border: 1px solid transparent;
 }
+
+summary {
+	transition: 200ms;
+}
+
 details:hover {
 	/* background-color: rgba(255, 255, 255, 0); */
 	cursor: pointer;
@@ -100,8 +106,21 @@ summary::before {
 details[open] summary::before {
 	/* content: '📂'; */
 	top: 20px;
+	/* transition: 200ms; */
 	/* content: url('/folder-open.png'); */
 	/* transform: rotate(90deg); */
+}
+
+/* #sidebar {
+	transition: all 1s ease-in;
+} */
+
+#fileview::-webkit-scrollbar {
+	display: none;
+}
+
+#fileview {
+	scrollbar-width: none;
 }
 
 /* pre:has(#activeCursor) {

@@ -14,6 +14,7 @@ import React, {
 	// useState,
 } from 'react';
 import { fileType } from './sidebar/FileView';
+import Editor from '@/structure/IdealEditor';
 
 export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
@@ -75,8 +76,6 @@ export default function EditorView() {
 			);
 			console.log('Top: ', lineNotVisible);
 			console.log('Bottom: ', lineBottomNotVisible);
-			// setTopLine(lineNotVisible);
-			// setBottomLine(lineBottomNotVisible);
 		});
 		// window.editor = editor;
 	}, []);
@@ -85,34 +84,51 @@ export default function EditorView() {
 		if (!selectedFileId) {
 			return;
 		}
-		dispatch({ type: 'resetEditor', payload: editor });
+		const prevContentInfo = currentContent;
+		const content = editor.getAllContent;
+
+		if (prevContentInfo) {
+			const id = prevContentInfo?.id;
+			prevContentInfo.content = content;
+			localStorage.setItem(id, JSON.stringify(prevContentInfo));
+		}
+
+		const fileInfo = localStorage.getItem(selectedFileId);
+		if (!fileInfo) return;
+
+		const parsedFileInfo: fileType = JSON.parse(fileInfo);
+		if (!parsedFileInfo) {
+			return;
+		}
+		setCurrentContent(parsedFileInfo);
 		setTimeout(() => {
-			const fileInfo = localStorage.getItem(selectedFileId);
-			if (!fileInfo) return;
+			const newEditor = new Editor(parsedFileInfo.content);
+			console.log(parsedFileInfo.content);
+			dispatch({ type: 'resetEditor', payload: newEditor });
+			setTimeout(() => {
+				document.dispatchEvent(new CustomEvent('oncursormove'));
+			}, 10);
+		}, 0);
+	}, [selectedFileId, dispatch]);
 
-			const parsedFileInfo: fileType = JSON.parse(fileInfo);
-			if (!parsedFileInfo) {
-				return;
-			}
-			setCurrentContent(parsedFileInfo);
-			// editorRef.current?.dispatchEvent(
-			// 	new KeyboardEvent('keydown', { key: 'a', metaKey: true })
-			// );
-			// editorRef.current?.dispatchEvent(
-			// 	new KeyboardEvent('keydown', { key: 'Backspace' })
-			// );
-			navigator.clipboard.writeText(parsedFileInfo.name);
-			editorRef.current?.dispatchEvent(
-				new KeyboardEvent('keydown', { key: 'v', metaKey: true })
-			);
-		}, 100);
-	}, [selectedFileId]);
-	// console.log('selectedFileId', editor);
-
+	if (!currentContent) {
+		return (
+			<div className="w-full h-[100vh] flex flex-col items-center justify-center gap-10">
+				<img
+					src="/outline.png"
+					alt="outlogo"
+					className="opacity-20 transform scale-110"
+				/>
+				<p className="text-lg opacity-60">
+					Create a ideal and start writing
+				</p>
+			</div>
+		);
+	}
 	return (
 		<>
 			<div className="my-20">
-				<h1 className="text-4xl font-bold">{currentContent?.name}</h1>
+				<h1 className="text-4xl font-bold">{currentContent.name}</h1>
 			</div>
 			<div
 				ref={editorRef}

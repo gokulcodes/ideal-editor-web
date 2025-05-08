@@ -29,8 +29,7 @@ export const reducer = (
 		case 'type':
 			return { ...state, editor: action.payload };
 		case 'resetEditor':
-			console.log('editor initialized');
-			return { ...state, editor: new Editor() };
+			return { ...state, editor: action.payload };
 	}
 	return state;
 };

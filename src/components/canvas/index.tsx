@@ -9,9 +9,7 @@ import CanvasOptions from './CanvasOptions';
 
 export default function Canvas() {
 	const [state, dispatch] = useReducer(reducer, editorState);
-	// const {
-	// 	state: { selectedFileId },
-	// } = useContext(idealContext);
+
 	return (
 		<div
 			tabIndex={0}

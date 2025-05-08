@@ -52,7 +52,8 @@ export default function Sidebar() {
 	return (
 		<div
 			ref={sideBarRef}
-			className="bg-[#131313] z-50 transition-all animate-sidebarOpen fixed left-0 flex flex-col w-full md:w-1/4 xl:w-1/6 h-full"
+			id="sidebar"
+			className="bg-[#202020] z-50 transition-all animate-sidebarOpen fixed left-0 flex flex-col w-full md:w-1/4 xl:w-1/6 h-full"
 		>
 			<LogoView />
 			<FileView />
