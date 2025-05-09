@@ -10,10 +10,13 @@ export default function Home() {
 
 	return (
 		<IdealContext.Provider value={{ state, dispatch }}>
-			{/* <div className='flex items-center justify-center'> */}
-			<Sidebar />
-			<Canvas />
-			{/* </div> */}
+			<div
+				id="wrapper"
+				className="flex items-start justify-between"
+			>
+				<Sidebar />
+				<Canvas />
+			</div>
 		</IdealContext.Provider>
 	);
 }

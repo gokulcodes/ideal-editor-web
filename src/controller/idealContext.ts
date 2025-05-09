@@ -3,6 +3,7 @@ import { createContext } from 'react';
 
 export const initialState = {
 	isSidebarOpen: true,
+	isSidebarAnimate: true,
 	newFileCreate: false,
 	newFolderCreate: false,
 	selectedFileId: '',
@@ -13,6 +14,7 @@ export const initialState = {
 
 type idealContextType = {
 	isSidebarOpen: boolean;
+	isSidebarAnimate: boolean;
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
 	selectedFileId: string;
@@ -33,6 +35,11 @@ export const reducer = (
 	switch (action.type) {
 		case 'toggleSidebar':
 			return { ...state, isSidebarOpen: action.payload.isSidebarOpen };
+		case 'sidebarAnimate':
+			return {
+				...state,
+				isSidebarAnimate: action.payload.isSidebarAnimate,
+			};
 		case 'newFileCreate':
 			return { ...state, newFileCreate: action.payload.newFileCreate };
 		case 'newFolderCreate':

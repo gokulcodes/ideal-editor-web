@@ -15,12 +15,11 @@ import React, {
 } from 'react';
 import { File } from '@/types/types';
 import Editor from '@/structure/IdealEditor';
-import CanvasOptions from './canvas/CanvasOptions';
 
 export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
 	const {
-		state: { selectedFileId, isFocusMode, isReaderMode },
+		state: { selectedFileId, isReaderMode },
 	} = useContext(idealContext);
 	const [currentContent, setCurrentContent] = useState<File>();
 	const editor = state.editor;
@@ -140,17 +139,7 @@ export default function EditorView() {
 
 	return (
 		<>
-			{!isFocusMode && (
-				<div className="flex flex-row justify-between mt-10 w-11/12 md:w-9/12 xl:w-1/2">
-					<img
-						src="/logo-title.png"
-						alt="outlogo"
-						className="w-24 h-auto"
-					/>
-					<CanvasOptions />
-				</div>
-			)}
-			<div className="mt-20 mb-10">
+			<div className="w-11/12 md:w-9/12 flex items-center justify-center mt-20 mb-10">
 				<h1
 					style={{ letterSpacing: '10px' }}
 					className="text-base opacity-50 uppercase font-bold"
@@ -162,7 +151,7 @@ export default function EditorView() {
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
-				className="relative outline-none select-none cursor-text w-11/12 md:w-9/12 xl:w-1/2 h-[100vh] overflow-hidden"
+				className="relative outline-none select-none w-11/12 md:w-9/12 self-center cursor-text h-[100vh] overflow-hidden"
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {

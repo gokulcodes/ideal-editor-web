@@ -11,6 +11,7 @@ import { CiFileOn } from 'react-icons/ci';
 import { File } from '@/types/types';
 import FolderCreateView from './FolderCreateView';
 import FileCreateView from './FileCreateView';
+import { VscNewFile, VscNewFolder } from 'react-icons/vsc';
 
 type RenderFolderType = {
 	updateSelectedFile: (id: string) => void;
@@ -154,12 +155,45 @@ export default function FileView() {
 		);
 	}
 
+	function openFileCreate() {
+		dispatch({
+			type: 'newFileCreate',
+			payload: { ...state, newFileCreate: true },
+		});
+	}
+
+	function openFolderCreate() {
+		dispatch({
+			type: 'newFolderCreate',
+			payload: { ...state, newFolderCreate: true },
+		});
+	}
+
 	return (
 		<div
 			id="fileview"
 			ref={fileRef}
-			className="w-full h-[83vh] relative overscroll-contain overflow-y-scroll select-none"
+			className="w-full h-full relative overscroll-contain overflow-y-scroll select-none"
 		>
+			<div className="flex flex-col gap-3 px-4 my-4">
+				<button
+					onClick={openFileCreate}
+					className="px-4 py-2 flex items-center gap-2  cursor-pointer hover:bg-white/2 border border-white/10 rounded-sm"
+				>
+					<VscNewFile />
+					New File
+				</button>
+				<button
+					onClick={openFolderCreate}
+					className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/2 border border-white/10 rounded-sm"
+				>
+					<VscNewFolder />
+					New Folder
+				</button>
+			</div>
+			<p className="uppercase tracking-widest mx-5 my-3 opacity-40 text-xs">
+				Files & Folders
+			</p>
 			<Suspense fallback={<p>Loading...</p>}>
 				<RenderFolder
 					selectedFileId={state.selectedFileId}

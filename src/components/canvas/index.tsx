@@ -4,16 +4,14 @@ import EditorContext, {
 	reducer,
 } from '../../controller/editorContext';
 import { useReducer } from 'react';
-// import idealContext from '@/controller/idealContext';
+import Header from './Header';
 
 export default function Canvas() {
 	const [state, dispatch] = useReducer(reducer, editorState);
 
 	return (
-		<div
-			tabIndex={0}
-			className="flex flex-col w-full items-center "
-		>
+		<div className="flex flex-col items-center justify-center w-full">
+			<Header />
 			<EditorContext.Provider value={{ state, dispatch }}>
 				<EditorView />
 			</EditorContext.Provider>
