@@ -1,5 +1,12 @@
 import idealContext from '@/controller/idealContext';
-import { memo, Suspense, useContext, useEffect, useRef } from 'react';
+import {
+	memo,
+	Suspense,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+} from 'react';
 import { CiFileOn } from 'react-icons/ci';
 import { File } from '@/types/types';
 import FolderCreateView from './FolderCreateView';
@@ -8,7 +15,7 @@ import FileCreateView from './FileCreateView';
 type RenderFolderType = {
 	updateSelectedFile: (id: string) => void;
 	selectedFileId: string;
-	files: Array<File>;
+	files: Array<File> | null;
 	isInnerFolderView: boolean;
 };
 
@@ -36,7 +43,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 		return null;
 	}
 
-	if (!state.files.length) {
+	if (!files || !Array.isArray(files)) {
 		return null;
 	}
 
@@ -62,19 +69,13 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								</span>
 							</summary>
 							<div className="relative pl-8 mt-4">
-								{file.childFiles.length && (
-									<>
-										<RenderFolder
-											updateSelectedFile={
-												updateSelectedFile
-											}
-											selectedFileId={selectedFileId}
-											files={file.childFiles}
-											isInnerFolderView={true}
-										/>
-										{FileOrFolderCreateView(file.id)}
-									</>
-								)}
+								<RenderFolder
+									updateSelectedFile={updateSelectedFile}
+									selectedFileId={selectedFileId}
+									files={file.childFiles}
+									isInnerFolderView={true}
+								/>
+								{FileOrFolderCreateView(file.id)}
 							</div>
 						</details>
 					);
@@ -114,17 +115,25 @@ export default function FileView() {
 				type: 'fileUpdate',
 				payload: { ...state, files: parsedFiles },
 			});
+		} else {
+			dispatch({
+				type: 'fileUpdate',
+				payload: { ...state, files: [] },
+			});
 		}
 	}, [dispatch]);
 
-	function updateSelectedFile(id: string) {
-		dispatch({
-			type: 'updateSelectedFileId',
-			payload: { ...state, selectedFileId: id },
-		});
-	}
+	const updateSelectedFile = useCallback(
+		(id: string) => {
+			dispatch({
+				type: 'updateSelectedFileId',
+				payload: { ...state, selectedFileId: id },
+			});
+		},
+		[dispatch, state]
+	);
 
-	if (!state.files.length) {
+	if (!Array.isArray(state.files)) {
 		return (
 			<div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
 				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
@@ -144,6 +153,7 @@ export default function FileView() {
 			</div>
 		);
 	}
+
 	return (
 		<div
 			id="fileview"

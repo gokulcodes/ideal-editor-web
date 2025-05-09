@@ -6,7 +6,7 @@ export const initialState = {
 	newFileCreate: false,
 	newFolderCreate: false,
 	selectedFileId: '',
-	files: [],
+	files: null,
 	isFocusMode: false,
 	isReaderMode: false,
 };
@@ -16,7 +16,7 @@ type idealContextType = {
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
 	selectedFileId: string;
-	files: File[];
+	files: File[] | null;
 	isFocusMode: boolean;
 	isReaderMode: boolean;
 };
