@@ -1,16 +1,30 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function useCursorListener(
 	editorRef: HTMLDivElement | null,
-	cursorRef: HTMLDivElement | null
+	cursorRef: HTMLDivElement | null,
+	isReaderMode: boolean
 ) {
+	const [cursorVisibility, setCursorVisibility] = useState(true);
 	const handleCursorUpdate = useCallback(() => {
 		if (!cursorRef || !editorRef) {
 			return;
 		}
+		if (isReaderMode) {
+			cursorRef.style.display = 'none';
+			return;
+		}
+		cursorRef.style.display = 'flex';
 		const activeCursor = document.getElementById('activeCursor');
 		const geometry = activeCursor?.getBoundingClientRect();
+		const editorGeometry = editorRef.getBoundingClientRect();
 		if (geometry) {
+			if (editorGeometry.right - 20 < geometry?.left) {
+				console.log('about to get hidden');
+				setCursorVisibility(false);
+			} else {
+				setCursorVisibility(true);
+			}
 			const cursorLeftPos =
 					geometry.left - editorRef.offsetLeft + geometry.width,
 				cursorTopPos =
@@ -21,7 +35,7 @@ export default function useCursorListener(
 			cursorRef.style.height = `${cursorHeight}px`;
 			cursorRef.style.top = `${cursorTopPos}px`;
 		}
-	}, [cursorRef, editorRef]);
+	}, [cursorRef, isReaderMode, editorRef]);
 
 	useEffect(() => {
 		handleCursorUpdate();
@@ -30,4 +44,7 @@ export default function useCursorListener(
 			document.removeEventListener('oncursormove', handleCursorUpdate);
 		};
 	}, [handleCursorUpdate]);
+	return {
+		cursorVisibility,
+	};
 }

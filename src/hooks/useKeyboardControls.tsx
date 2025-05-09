@@ -8,6 +8,7 @@ import {
 
 export default function useKeyboardControls(
 	state: EditorStateType,
+	isReaderMode: boolean,
 	dispatch: React.Dispatch<ActionType>,
 	editorRef: HTMLDivElement | null
 ) {
@@ -117,7 +118,7 @@ export default function useKeyboardControls(
 
 			event.preventDefault();
 
-			if (isIgnorableKeys(event)) {
+			if (isIgnorableKeys(event) || isReaderMode) {
 				return;
 			}
 
@@ -178,7 +179,7 @@ export default function useKeyboardControls(
 
 			dispatch({ type: 'type', payload: editor });
 		},
-		[dispatch, handleKeyboardShortcuts, cursor, editor]
+		[dispatch, handleKeyboardShortcuts, isReaderMode, cursor, editor]
 	);
 
 	useEffect(() => {

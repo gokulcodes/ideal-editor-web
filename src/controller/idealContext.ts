@@ -1,4 +1,4 @@
-import { fileType } from '@/components/sidebar/FileView';
+import { File } from '@/types/types';
 import { createContext } from 'react';
 
 export const initialState = {
@@ -7,6 +7,8 @@ export const initialState = {
 	newFolderCreate: false,
 	selectedFileId: '',
 	files: [],
+	isFocusMode: false,
+	isReaderMode: false,
 };
 
 type idealContextType = {
@@ -14,7 +16,9 @@ type idealContextType = {
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
 	selectedFileId: string;
-	files: fileType[];
+	files: File[];
+	isFocusMode: boolean;
+	isReaderMode: boolean;
 };
 
 export type ActionType = {
@@ -45,6 +49,16 @@ export const reducer = (
 			return {
 				...state,
 				files: action.payload.files,
+			};
+		case 'toggleFocusMode':
+			return {
+				...state,
+				isFocusMode: action.payload.isFocusMode,
+			};
+		case 'toggleReaderMode':
+			return {
+				...state,
+				isReaderMode: action.payload.isReaderMode,
 			};
 		default:
 			return state;

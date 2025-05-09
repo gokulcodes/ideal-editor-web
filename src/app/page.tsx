@@ -7,6 +7,7 @@ import { useReducer } from 'react';
 
 export default function Home() {
 	const [state, dispatch] = useReducer(reducer, initialState);
+
 	return (
 		<IdealContext.Provider value={{ state, dispatch }}>
 			{/* <div className='flex items-center justify-center'> */}

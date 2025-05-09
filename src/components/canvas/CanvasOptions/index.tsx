@@ -1,29 +1,58 @@
+import idealContext from '@/controller/idealContext';
+import { useContext } from 'react';
 import { MdOutlineChromeReaderMode } from 'react-icons/md';
-import { RiFocusLine } from 'react-icons/ri';
+import { RiFocusLine, RiGithubLine } from 'react-icons/ri';
 
 export default function CanvasOptions() {
+	const { state, dispatch } = useContext(idealContext);
+	function handleFocusMode() {
+		dispatch({
+			type: 'toggleFocusMode',
+			payload: { ...state, isFocusMode: true },
+		});
+	}
+
+	function handleReaderMode() {
+		dispatch({
+			type: 'toggleReaderMode',
+			payload: { ...state, isReaderMode: !state.isReaderMode },
+		});
+	}
+
 	return (
-		<div className="flex flex-row gap-2  fixed bottom-2 right-2">
+		<div className="flex flex-row gap-2">
 			<button
+				onClick={handleReaderMode}
 				style={{ width: 'fit-content' }}
-				className="border border-white/5 text-white/40 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-3 py-2 flex flex-row  items-center gap-2 justify-start text-xs w-full text-left"
+				className="border border-white/10 text-white/80 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
 				<MdOutlineChromeReaderMode />
 				Reader Mode
 			</button>
 			<button
 				style={{ width: 'fit-content' }}
-				className="border border-white/5 text-white/40 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-3 py-2 flex flex-row  items-center gap-2 justify-start text-xs w-full text-left"
+				onClick={handleFocusMode}
+				className="border border-white/10 text-white/80 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
 				<RiFocusLine />
 				Focus Mode
 			</button>
-			<button
+			<a
+				href="https://github.com/gokulcodes/ideal-editor-web"
+				target="_blank"
+				referrerPolicy="no-referrer"
+				style={{ width: 'fit-content' }}
+				className="border border-white/10 text-white/80 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+			>
+				<RiGithubLine />
+				Github
+			</a>
+			{/* <button
 				style={{ width: 'fit-content' }}
 				className="border border-white/5 text-white/40 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-3 py-2 flex flex-row  items-center gap-2 justify-start text-xs w-full text-left"
 			>
 				Ln 19 Col 20
-			</button>
+			</button> */}
 		</div>
 	);
 }

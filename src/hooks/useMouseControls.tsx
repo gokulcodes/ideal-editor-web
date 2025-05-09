@@ -24,14 +24,12 @@ export default function useMouseControls(
 				mouseMoveInfo.current.offsetY = 0; // reset mouse movement after click
 				return;
 			}
-
 			editor.resetSelection();
 			if (!event || !event.target || !editorRef) {
 				return;
 			}
 			const targetNode = event.target as HTMLElement;
 			const parentNode = targetNode.parentNode as HTMLElement;
-
 			// curser letter position calculation. This improved the overall editor performance by 20x
 			const clientX = event.clientX - editorRef.offsetLeft;
 			let charWidth = clientX / 12;
@@ -66,14 +64,22 @@ export default function useMouseControls(
 
 	const handleMouseMove = useCallback(
 		(event: MouseEvent) => {
-			if (!mouseDown.current) {
+			if (!mouseDown.current || !editorRef) {
 				return;
 			}
 
-			let textStart = Math.floor(mouseDown.current.clientX / 12),
-				textEnd = Math.floor(event.clientX / 12);
-			let lineStart = Math.floor(mouseDown.current.clientY / 32),
-				lineEnd = Math.floor(event.clientY / 32);
+			let textStart = Math.floor(
+					(mouseDown.current.clientX - editorRef.offsetLeft) / 12
+				),
+				textEnd = Math.floor(
+					(event.clientX - editorRef.offsetLeft) / 12
+				);
+			let lineStart = Math.floor(
+					(mouseDown.current.clientY - editorRef?.offsetTop) / 32
+				),
+				lineEnd = Math.floor(
+					(event.clientY - editorRef.offsetTop) / 32
+				);
 			const x = event.clientX - mouseMoveInfo.current.offsetX;
 			const y = event.clientY - mouseMoveInfo.current.offsetY;
 			if (
@@ -93,6 +99,7 @@ export default function useMouseControls(
 			while (mouseUpTarget && !mouseUpTarget.id.includes('line')) {
 				mouseUpTarget = mouseUpTarget.parentElement;
 			}
+			console.log(lineEnd, textEnd);
 			editor.moveCursorToNthLine(lineEnd, textEnd);
 
 			const dir =

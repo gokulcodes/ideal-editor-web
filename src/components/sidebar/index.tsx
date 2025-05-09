@@ -10,42 +10,46 @@ export default function Sidebar() {
 	const isSidebarOpen = state.isSidebarOpen;
 
 	const handleSidebarView = useCallback(
+		// on every mouse move this function will be triggered. needs optimizatino
 		(event: MouseEvent) => {
 			if (state.newFileCreate || state.newFolderCreate) {
-				// dispatch({
-				// 	type: 'toggleSidebar',
-				// 	payload: { ...state, isSidebarOpen: true },
-				// });
+				dispatch({
+					type: 'toggleSidebar',
+					payload: { ...state, isSidebarOpen: true },
+				});
 				return;
 			}
 			if (event.clientX < 50) {
-				// dispatch({
-				// 	type: 'toggleSidebar',
-				// 	payload: { ...state, isSidebarOpen: true },
-				// });
+				dispatch({
+					type: 'toggleSidebar',
+					payload: {
+						...state,
+						isSidebarOpen: true,
+					},
+				});
 			} else if (
 				sideBarRef.current &&
 				event.clientX >
 					sideBarRef.current?.clientWidth +
 						sideBarRef.current?.offsetLeft
 			) {
-				// dispatch({
-				// 	type: 'toggleSidebar',
-				// 	payload: { ...state, isSidebarOpen: false },
-				// });
+				dispatch({
+					type: 'toggleSidebar',
+					payload: { ...state, isSidebarOpen: false },
+				});
 			}
 		},
 		[dispatch, state]
 	);
 
 	useEffect(() => {
-		document.addEventListener('mousemove', handleSidebarView);
+		// document.addEventListener('mousemove', handleSidebarView);
 		return () => {
-			document.removeEventListener('mousemove', handleSidebarView);
+			// document.removeEventListener('mousemove', handleSidebarView);
 		};
 	}, [dispatch, handleSidebarView]);
 
-	if (!isSidebarOpen) {
+	if (!isSidebarOpen || state.isFocusMode) {
 		return null;
 	}
 

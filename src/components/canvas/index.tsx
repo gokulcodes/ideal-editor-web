@@ -4,7 +4,6 @@ import EditorContext, {
 	reducer,
 } from '../../controller/editorContext';
 import { useReducer } from 'react';
-import CanvasOptions from './CanvasOptions';
 // import idealContext from '@/controller/idealContext';
 
 export default function Canvas() {
@@ -18,7 +17,6 @@ export default function Canvas() {
 			<EditorContext.Provider value={{ state, dispatch }}>
 				<EditorView />
 			</EditorContext.Provider>
-			<CanvasOptions />
 		</div>
 	);
 }

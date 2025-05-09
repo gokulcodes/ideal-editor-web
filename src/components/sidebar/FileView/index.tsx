@@ -1,186 +1,43 @@
 import idealContext from '@/controller/idealContext';
-import { FocusEvent, useContext, useEffect, useRef } from 'react';
-import { CiFileOn, CiFolderOn } from 'react-icons/ci';
-import { v4 as uuid } from 'uuid';
+import { memo, Suspense, useContext, useEffect, useRef } from 'react';
+import { CiFileOn } from 'react-icons/ci';
+import { File } from '@/types/types';
+import FolderCreateView from './FolderCreateView';
+import FileCreateView from './FileCreateView';
 
-export type fileType = {
-	id: string;
-	name: string;
-	type: 'folder' | 'file';
-	content: string;
-	childFiles: Array<fileType>;
-};
-
-function RenderFolder({
-	updateSelectedFile,
-	selectedFileId,
-	files,
-	isInnerFolderView,
-}: {
+type RenderFolderType = {
 	updateSelectedFile: (id: string) => void;
 	selectedFileId: string;
-	files: Array<fileType>;
+	files: Array<File>;
 	isInnerFolderView: boolean;
-}) {
-	const { state, dispatch } = useContext(idealContext);
-	if (!files) {
+};
+
+const RenderFolder = memo((props: RenderFolderType) => {
+	const { updateSelectedFile, selectedFileId, files, isInnerFolderView } =
+		props;
+	const { state } = useContext(idealContext);
+
+	const isFolderCreateViewOpen = (id: string) =>
+		id === selectedFileId && state.newFolderCreate;
+	// 	[selectedFileId, state.newFolderCreate]
+	// );
+	const isFileCreateViewOpen = (id: string) =>
+		id === selectedFileId && state.newFileCreate;
+	// 	[selectedFileId, state.newFileCreate]
+	// );
+
+	function FileOrFolderCreateView(id: string) {
+		if (isFolderCreateViewOpen(id)) {
+			return <FolderCreateView isInnerFolderView={isInnerFolderView} />;
+		}
+		if (isFileCreateViewOpen(id)) {
+			return <FileCreateView isInnerFolderView={isInnerFolderView} />;
+		}
 		return null;
 	}
 
-	function handleFileCreation(event: FocusEvent<HTMLInputElement>) {
-		if (!event.target || !event.target.value) {
-			dispatch({
-				type: 'newFileCreate',
-				payload: { ...state, newFileCreate: false },
-			});
-			return;
-		}
-		const id = uuid();
-		const newfile = {
-			id: id,
-			type: 'file',
-			name: event.target.value,
-			content: '',
-		};
-
-		localStorage.setItem(id, JSON.stringify(newfile));
-
-		let files = localStorage.getItem('files');
-		if (!files) {
-			files = '[]';
-		}
-		let parsedFiles = JSON.parse(files);
-		if (!parsedFiles) parsedFiles = [];
-
-		if (state.selectedFileId) {
-			const updatedFiles = [];
-			let fileInserted = false;
-			for (const files of parsedFiles) {
-				if (files.type === 'file') {
-					updatedFiles.push(files);
-					continue;
-				}
-
-				if (files.id !== state.selectedFileId) {
-					updatedFiles.push(files);
-					continue;
-				}
-
-				const existingFiles = files.childFiles ? files.childFiles : [];
-				existingFiles.push(newfile);
-				fileInserted = true;
-				updatedFiles.push({ ...files, childFiles: existingFiles });
-			}
-			if (!fileInserted) updatedFiles.push(newfile);
-			parsedFiles = updatedFiles;
-		} else {
-			parsedFiles.push(newfile);
-		}
-
-		dispatch({
-			type: 'fileUpdate',
-			payload: { ...state, files: parsedFiles },
-		});
-		localStorage.setItem('files', JSON.stringify(parsedFiles));
-		event.target.value = '';
-		dispatch({
-			type: 'newFileCreate',
-			payload: { ...state, newFileCreate: false },
-		});
-	}
-
-	function handleFolderCreation(event: FocusEvent<HTMLInputElement>) {
-		if (!event.target || !event.target.value) {
-			dispatch({
-				type: 'newFolderCreate',
-				payload: { ...state, newFolderCreate: false },
-			});
-			return;
-		}
-
-		const newFolder = {
-			id: uuid(),
-			type: 'folder',
-			name: event.target.value,
-			childFiles: [],
-		};
-
-		let files = localStorage.getItem('files');
-		if (!files) {
-			files = '[]';
-		}
-		let parsedFiles = JSON.parse(files);
-		if (!parsedFiles) parsedFiles = [];
-		if (state.selectedFileId) {
-			const updatedFiles = [];
-			let fileInserted = false;
-			for (const files of parsedFiles) {
-				if (files.type === 'file') {
-					updatedFiles.push(files);
-					continue;
-				}
-
-				if (files.id !== state.selectedFileId) {
-					updatedFiles.push(files);
-					continue;
-				}
-
-				const existingFiles = files.childFiles ? files.childFiles : [];
-				existingFiles.push(newFolder);
-				fileInserted = true;
-				updatedFiles.push({ ...files, childFiles: existingFiles });
-			}
-			if (!fileInserted) updatedFiles.push(newFolder);
-			parsedFiles = updatedFiles;
-		} else {
-			parsedFiles.push(newFolder);
-		}
-		dispatch({
-			type: 'fileUpdate',
-			payload: { ...state, files: parsedFiles },
-		});
-		localStorage.setItem('files', JSON.stringify(parsedFiles));
-		event.target.value = '';
-		dispatch({
-			type: 'newFolderCreate',
-			payload: { ...state, newFolderCreate: false },
-		});
-	}
-
-	function FileCreate() {
-		return (
-			<div
-				className={`flex mt-2 items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
-			>
-				<span>
-					<CiFileOn />
-				</span>
-				<input
-					autoFocus
-					type="text"
-					onBlur={handleFileCreation}
-					className="border bg-black/20 outline-none w-full focus-within:border-blue-400 border-white/5"
-				/>
-			</div>
-		);
-	}
-
-	function FolderCreate() {
-		return (
-			<div
-				className={`flex mt-2 items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
-			>
-				<span>
-					<CiFolderOn />
-				</span>
-				<input
-					autoFocus
-					type="text"
-					onBlur={handleFolderCreation}
-					className="border bg-black/20 outline-none w-full focus-within:border-blue-400 border-white/5"
-				/>
-			</div>
-		);
+	if (!state.files.length) {
+		return null;
 	}
 
 	return (
@@ -205,18 +62,19 @@ function RenderFolder({
 								</span>
 							</summary>
 							<div className="relative pl-8 mt-4">
-								{RenderFolder({
-									updateSelectedFile,
-									selectedFileId,
-									files: file.childFiles,
-									isInnerFolderView: true,
-								})}
-								{file.id === selectedFileId &&
-									state.newFolderCreate &&
-									FolderCreate()}
-								{file.id === selectedFileId &&
-									state.newFileCreate &&
-									FileCreate()}
+								{file.childFiles.length && (
+									<>
+										<RenderFolder
+											updateSelectedFile={
+												updateSelectedFile
+											}
+											selectedFileId={selectedFileId}
+											files={file.childFiles}
+											isInnerFolderView={true}
+										/>
+										{FileOrFolderCreateView(file.id)}
+									</>
+								)}
 							</div>
 						</details>
 					);
@@ -234,23 +92,20 @@ function RenderFolder({
 							<CiFileOn />
 							<span className="pl-2">{file.name}</span>
 						</span>
-						{file.id === selectedFileId &&
-							state.newFolderCreate &&
-							FolderCreate()}
-						{file.id === selectedFileId &&
-							state.newFileCreate &&
-							FileCreate()}
+						{FileOrFolderCreateView(file.id)}
 					</>
 				);
 			})}
 		</div>
 	);
-}
+});
+
+RenderFolder.displayName = 'RenderFolder';
 
 export default function FileView() {
 	const { state, dispatch } = useContext(idealContext);
 	const fileRef = useRef<HTMLDivElement>(null);
-	// const [topPx, setTop] = useState(0);
+
 	useEffect(() => {
 		const files = localStorage.getItem('files');
 		if (files) {
@@ -269,34 +124,46 @@ export default function FileView() {
 		});
 	}
 
-	useEffect(() => {
-		if (!fileRef.current) {
-			return;
-		}
-		// fileRef.current.addEventListener('mousemove', (event) => {
-		// 	const clientY = event.clientY;
-		// 	const top = clientY / 40;
-		// 	console.log(top * 40);
-		// 	setTop(top * 40);
-		// });
-	}, []);
-
+	if (!state.files.length) {
+		return (
+			<div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+			</div>
+		);
+	}
 	return (
 		<div
 			id="fileview"
 			ref={fileRef}
 			className="w-full h-[83vh] relative overscroll-contain overflow-y-scroll select-none"
 		>
-			<RenderFolder
-				selectedFileId={state.selectedFileId}
-				updateSelectedFile={updateSelectedFile}
-				files={state.files}
-				isInnerFolderView={false}
-			/>
-			{/* <div
-				style={{ top: `${topPx}px` }}
-				className="absolute left-0 w-full h-10 -z-10 bg-white/2"
-			/> */}
+			<Suspense fallback={<p>Loading...</p>}>
+				<RenderFolder
+					selectedFileId={state.selectedFileId}
+					updateSelectedFile={updateSelectedFile}
+					files={state.files}
+					isInnerFolderView={false}
+				/>
+			</Suspense>
+			{state.newFileCreate && !state.selectedFileId && (
+				<FileCreateView isInnerFolderView={false} />
+			)}
+			{state.newFolderCreate && !state.selectedFileId && (
+				<FolderCreateView isInnerFolderView={false} />
+			)}
 		</div>
 	);
 }

@@ -7,12 +7,14 @@ class Line {
 	lineTail: Letter; // End of the individual line[Don't confuse it with editorTail]
 	nextLine: Line | null;
 	prevLine: Line | null;
+	isUserInsertedLine: boolean;
 	editor: Editor;
-	constructor(editor: Editor) {
+	constructor(editor: Editor, isUserInsertedLine: boolean = true) {
 		this.lineHead = new Letter(''); // sentinal letter node
 		this.lineTail = this.lineHead;
 		this.nextLine = null;
 		this.prevLine = null;
+		this.isUserInsertedLine = isUserInsertedLine;
 		this.editor = editor;
 	}
 
