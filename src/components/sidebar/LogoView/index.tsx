@@ -17,18 +17,18 @@ export default function LogoView() {
 		}, 400);
 	}
 	return (
-		<div className="flex flex-row items-center justify-between p-4 border-b border-white/10">
-			<img
-				className="w-24 h-auto"
-				src="/logo-title.png"
-				alt="ideal-logo"
-			/>
+		<div className="flex flex-row items-center gap-4 p-4 border-b border-white/10">
 			<button
 				onClick={handleSidebarCollapse}
 				className="p-2 cursor-pointer hover:bg-white/5 border border-white/10 rounded-sm"
 			>
-				<TbLayoutSidebarLeftCollapse />
+				<TbLayoutSidebarLeftCollapse size={24} />
 			</button>
+			<img
+				className="w-20 h-auto"
+				src="/ideal.png"
+				alt="ideal-logo"
+			/>
 		</div>
 	);
 }

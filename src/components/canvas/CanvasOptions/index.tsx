@@ -42,10 +42,10 @@ export default function CanvasOptions() {
 				target="_blank"
 				referrerPolicy="no-referrer"
 				style={{ width: 'fit-content' }}
-				className="border border-white/10 text-white/80 hover:text-white cursor-pointer hover:bg-white/10 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				className="border absolute right-4 top-4 border-white/10 text-white/80 hover:text-white cursor-pointer hover:bg-white/10 rounded-md p-3 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
-				<RiGithubLine />
-				Github
+				<RiGithubLine size={20} />
+				{/* Github */}
 			</a>
 			{/* <button
 				style={{ width: 'fit-content' }}

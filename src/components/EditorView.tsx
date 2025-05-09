@@ -139,7 +139,7 @@ export default function EditorView() {
 
 	return (
 		<>
-			<div className="w-11/12 md:w-9/12 flex items-center justify-center mt-20 mb-10">
+			<div className="w-11/12 md:w-6/12 xl:w-9/12 flex items-center justify-center mt-20 mb-10">
 				<h1
 					style={{ letterSpacing: '10px' }}
 					className="text-base opacity-50 uppercase font-bold"
@@ -151,7 +151,7 @@ export default function EditorView() {
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
-				className="relative outline-none select-none w-11/12 md:w-9/12 self-center cursor-text h-[100vh] overflow-hidden"
+				className="relative outline-none select-none w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh] overflow-hidden"
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {

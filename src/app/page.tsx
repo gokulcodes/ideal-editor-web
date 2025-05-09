@@ -12,7 +12,7 @@ export default function Home() {
 		<IdealContext.Provider value={{ state, dispatch }}>
 			<div
 				id="wrapper"
-				className="flex items-start justify-between"
+				className="flex items-start"
 			>
 				<Sidebar />
 				<Canvas />

@@ -137,20 +137,30 @@ export default function FileView() {
 	if (!Array.isArray(state.files)) {
 		return (
 			<div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
-				<div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+				{Array.from({ length: 10 })
+					.fill(0)
+					.map((_, index) => index)
+					.reverse()
+					.map((val) => (
+						<div
+							key={val}
+							className="h-10 bg-white/10 animate-pulse w-11/12 rounded-md"
+							style={{ filter: `brightness(${val / 10})` }}
+						/>
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+						// <div className="h-10 w-11/12 bg-white/10 animate-pulse rounded-md" />
+					))}
 			</div>
 		);
 	}
