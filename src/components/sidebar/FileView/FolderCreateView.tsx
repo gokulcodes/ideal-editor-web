@@ -1,6 +1,7 @@
 import idealContext from '@/controller/idealContext';
 import { useCallback, useContext, useEffect, memo, useRef } from 'react';
 import { CiFolderOn } from 'react-icons/ci';
+import { File, Folder } from '@/types/types';
 import { v4 as uuid } from 'uuid';
 
 function FolderCreateView(props: { isInnerFolderView: boolean }) {
@@ -18,7 +19,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				return;
 			}
 
-			const newFolder = {
+			const newFolder: Folder = {
 				id: uuid(),
 				type: 'folder',
 				name: value,
@@ -29,38 +30,42 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 			if (!files) {
 				files = '[]';
 			}
-			let parsedFiles = JSON.parse(files);
+			let parsedFiles: Array<File | Folder> = JSON.parse(files);
 			if (!parsedFiles) parsedFiles = [];
-			if (state.selectedFileId) {
-				const updatedFiles = [];
-				let fileInserted = false;
-				for (const files of parsedFiles) {
+			let fileInserted = false;
+
+			function fileSearch(totalFiles: Array<File | Folder>) {
+				// basic file search dfs
+				for (const files of totalFiles) {
 					if (files.type === 'file') {
-						updatedFiles.push(files);
 						continue;
 					}
 
+					// folders
 					if (files.id !== state.selectedFileId) {
-						updatedFiles.push(files);
+						if (files.childFiles.length) {
+							fileSearch(files.childFiles);
+						}
 						continue;
 					}
 
-					const existingFiles = files.childFiles
-						? files.childFiles
-						: [];
-					existingFiles.push(newFolder);
+					// folder with same id found
+					files.childFiles = [...files.childFiles, newFolder];
 					fileInserted = true;
-					updatedFiles.push({ ...files, childFiles: existingFiles });
 				}
-				if (!fileInserted) updatedFiles.push(newFolder);
-				parsedFiles = updatedFiles;
-			} else {
+			}
+
+			fileSearch(parsedFiles);
+
+			if (!fileInserted) {
 				parsedFiles.push(newFolder);
 			}
+
 			dispatch({
 				type: 'fileUpdate',
 				payload: { ...state, files: parsedFiles },
 			});
+
 			localStorage.setItem('files', JSON.stringify(parsedFiles));
 			folderInputRef.current.value = '';
 			dispatch({

@@ -51,6 +51,7 @@ export default function EditorView() {
 		});
 		if (cursorRef && cursorRef.current) observer.observe(cursorRef.current);
 	}
+
 	useEffect(() => {
 		cursorListener();
 	}, []);
@@ -67,6 +68,7 @@ export default function EditorView() {
 		cursorRef.current,
 		isReaderMode
 	);
+
 	useEffect(() => {
 		editorRef.current?.addEventListener('scroll', () => {
 			if (!editorRef.current) {
@@ -108,12 +110,12 @@ export default function EditorView() {
 		setCurrentContent(parsedFileInfo);
 		setTimeout(() => {
 			const newEditor = new Editor(parsedFileInfo.content);
-			console.log(parsedFileInfo.content);
 			dispatch({ type: 'resetEditor', payload: newEditor });
 			setTimeout(() => {
 				document.dispatchEvent(new CustomEvent('oncursormove'));
 			}, 10);
 		}, 0);
+		return () => {};
 	}, [selectedFileId, dispatch]);
 
 	useEffect(() => {

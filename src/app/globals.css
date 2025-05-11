@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
-/* *{
-	transition: all 0.2s ease-in;
+/* * {
+	transition: all 0.4s ease-in-out;
 } */
 
 :root {
@@ -87,10 +87,14 @@ body {
 	color: black;
 }
 
+#sidebar * {
+	transition: all 0.3s ease-in-out;
+}
+
 details {
 	/* padding: 10px 0px 10px 0px; */
 	transition: 200ms;
-	border: 1px solid transparent;
+	/* border: 1px solid transparent; */
 }
 
 summary {
@@ -122,17 +126,24 @@ summary::before {
 	background-repeat: no-repeat;
 }
 
-details[open] summary::before {
+details[open] {
 	/* content: '📂'; */
-	top: 20px;
+	/* top: 20px; */
+	border-top: 1px solid rgba(255, 255, 255, 0.101);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.101);
 	/* transition: 200ms; */
 	/* content: url('/folder-open.png'); */
 	/* transform: rotate(90deg); */
 }
 
-/* #sidebar {
-	transition: all 1s ease-in;
-} */
+details[open] summary::before {
+	/* content: '📂'; */
+	top: 20px;
+	/* border: 1px solid white; */
+	/* transition: 200ms; */
+	/* content: url('/folder-open.png'); */
+	/* transform: rotate(90deg); */
+}
 
 #fileview::-webkit-scrollbar {
 	display: none;
@@ -142,9 +153,9 @@ details[open] summary::before {
 	scrollbar-width: none;
 }
 
-#wrapper {
+/* #wrapper {
 	transition: all 0.8s ease-in-out;
-}
+} */
 
 /* pre:has(#activeCursor) {
 	background-color: rgba(255, 255, 255, 0.05);

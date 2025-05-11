@@ -10,11 +10,11 @@ export default function Canvas() {
 	const [state, dispatch] = useReducer(reducer, editorState);
 
 	return (
-		<div className="flex flex-col items-center justify-center w-full">
+		<main className="flex flex-col items-center justify-center w-full">
 			<Header />
 			<EditorContext.Provider value={{ state, dispatch }}>
 				<EditorView />
 			</EditorContext.Provider>
-		</div>
+		</main>
 	);
 }

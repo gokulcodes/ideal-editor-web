@@ -14,19 +14,19 @@ function Sidebar() {
 	}
 
 	return (
-		<div
+		<aside
 			className={`${state.isSidebarAnimate ? 'animate-sidebarOpen' : 'animate-sidebarClose'} h-[100vh] overflow-hidden sticky left-0 top-0 bottom-0 md:w-1/4`}
 		>
 			<div
 				ref={sideBarRef}
 				id="sidebar"
-				className={`bg-[#101010] w-72 absolute z-50 transition-all h-[100vh] flex flex-col border-r border-white/5`}
+				className={`bg-[#101010] w-72 absolute z-50 h-[100vh] flex flex-col border-r border-white/20`}
 			>
 				<LogoView />
 				<FileView />
 				<ProfileView />
 			</div>
-		</div>
+		</aside>
 	);
 }
 

@@ -22,7 +22,7 @@ function Header() {
 	}
 
 	return (
-		<div className="flex flex-row justify-between w-11/12 md:w-6/12 xl:w-9/12 mt-4">
+		<header className="flex flex-row justify-between w-11/12 md:w-6/12 xl:w-9/12 mt-4">
 			<div className="flex gap-2">
 				{!state.isSidebarOpen ? (
 					<button
@@ -39,7 +39,7 @@ function Header() {
 				/>
 			</div>
 			<CanvasOptions />
-		</div>
+		</header>
 	);
 }
 

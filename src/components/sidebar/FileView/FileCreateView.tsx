@@ -1,4 +1,5 @@
 import idealContext from '@/controller/idealContext';
+import { File, Folder } from '@/types/types';
 import { useCallback, useContext, useEffect, memo, useRef } from 'react';
 import { CiFileOn } from 'react-icons/ci';
 import { v4 as uuid } from 'uuid';
@@ -18,7 +19,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 				return;
 			}
 			const id = uuid();
-			const newfile = {
+			const newfile: File = {
 				id: id,
 				type: 'file',
 				name: value,
@@ -31,33 +32,31 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 			if (!files) {
 				files = '[]';
 			}
-			let parsedFiles = JSON.parse(files);
+			let parsedFiles: Array<File | Folder> = JSON.parse(files);
 			if (!parsedFiles) parsedFiles = [];
+			let fileInserted = false;
 
-			if (state.selectedFileId) {
-				const updatedFiles = [];
-				let fileInserted = false;
-				for (const files of parsedFiles) {
+			function fileSearch(totalFiles: Array<File | Folder>) {
+				for (const files of totalFiles) {
 					if (files.type === 'file') {
-						updatedFiles.push(files);
 						continue;
 					}
 
 					if (files.id !== state.selectedFileId) {
-						updatedFiles.push(files);
+						if (files.childFiles.length) {
+							fileSearch(files.childFiles);
+						}
 						continue;
 					}
 
-					const existingFiles = files.childFiles
-						? files.childFiles
-						: [];
-					existingFiles.push(newfile);
+					// folder with same id found
+					files.childFiles = [...files.childFiles, newfile];
 					fileInserted = true;
-					updatedFiles.push({ ...files, childFiles: existingFiles });
 				}
-				if (!fileInserted) updatedFiles.push(newfile);
-				parsedFiles = updatedFiles;
-			} else {
+			}
+
+			fileSearch(parsedFiles);
+			if (!fileInserted) {
 				parsedFiles.push(newfile);
 			}
 

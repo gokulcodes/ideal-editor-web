@@ -1,4 +1,4 @@
-import { File } from '@/types/types';
+import { File, Folder } from '@/types/types';
 import { createContext } from 'react';
 
 export const initialState = {
@@ -18,7 +18,7 @@ type idealContextType = {
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
 	selectedFileId: string;
-	files: File[] | null;
+	files: Array<File | Folder> | null;
 	isFocusMode: boolean;
 	isReaderMode: boolean;
 };
