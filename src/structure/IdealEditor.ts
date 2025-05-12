@@ -907,9 +907,10 @@ class Editor {
 		}
 		this.cursor.setLineCursor = linePtr;
 		let letterPtr = this.cursor.lineCursor.lineHead;
-		while (textNo--) {
+		while (textNo > 0) {
 			if (letterPtr.nextLetter) letterPtr = letterPtr.nextLetter;
 			else break;
+			textNo--;
 		}
 		this.cursor.setLetterCursor = letterPtr;
 	}
@@ -921,22 +922,25 @@ class Editor {
 		endPosition: number,
 		dir: string
 	) {
-		startPosition -= 1;
-		endPosition -= 1;
+		console.log('line: ', startLine, endLine);
+		console.log('letter: ', startPosition, endPosition);
+		console.log('direction: ', dir);
+
 		if (dir === 'UP') {
 			let linePtr: Line | null = this.editorHead,
 				lineCnt = 0;
 			while (linePtr) {
 				this.selectionMode = true;
 				let head: Letter | null = linePtr.lineHead,
-					letterCnt = 0;
+					letterCnt = 1;
 				while (head) {
 					if (startLine === endLine) {
 						if (
 							lineCnt == startLine &&
 							letterCnt >= startPosition &&
-							letterCnt <= endPosition
+							letterCnt < endPosition
 						) {
+							// console.log(letterCnt, startPosition, endPosition);
 							head.isSelected = true;
 						}
 					} else if (lineCnt > startLine && lineCnt < endLine) {
@@ -962,14 +966,15 @@ class Editor {
 		while (linePtr) {
 			this.selectionMode = true;
 			let head = linePtr.lineHead.nextLetter,
-				letterCnt = 0;
+				letterCnt = 1;
 			while (head) {
 				if (startLine === endLine) {
 					if (
 						lineCnt == startLine &&
-						letterCnt >= startPosition &&
+						letterCnt > startPosition &&
 						letterCnt <= endPosition
 					) {
+						// console.log(letterCnt, startPosition, endPosition);
 						head.isSelected = true;
 					}
 				} else if (lineCnt > startLine && lineCnt < endLine) {

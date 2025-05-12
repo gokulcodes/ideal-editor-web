@@ -82,9 +82,9 @@ body {
 }
 
 .selectedText {
-	background-color: white;
+	background-color: rgba(255, 255, 255, 0.236);
 	padding-bottom: 4px;
-	color: black;
+	color: white;
 }
 
 #sidebar * {

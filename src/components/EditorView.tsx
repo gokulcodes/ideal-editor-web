@@ -51,6 +51,9 @@ export default function EditorView() {
 		});
 		if (cursorRef && cursorRef.current) observer.observe(cursorRef.current);
 	}
+	// useEffect(() => {
+	// 	window.editor = editor;
+	// }, [state]);
 
 	useEffect(() => {
 		cursorListener();
@@ -149,7 +152,7 @@ export default function EditorView() {
 					{currentContent.name}
 				</h1>
 			</div>
-			<div
+			<main
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
@@ -175,7 +178,7 @@ export default function EditorView() {
 						className={`${isTyping ? '' : 'animate-cursor'} pointer-events-none min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] bg-white mb-0 overflow-hidden tracking-tighter white`}
 					/>
 				)}
-			</div>
+			</main>
 		</>
 	);
 }
