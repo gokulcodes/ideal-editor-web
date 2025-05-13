@@ -52,12 +52,7 @@ export default function useKeyboardControls(
 							break;
 
 						case 'a':
-							editor.updateLetterSelectionOnMouseMove(
-								0,
-								1000,
-								0,
-								100
-							);
+							editor.selectAll();
 							break;
 
 						case 'z':

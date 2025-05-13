@@ -1044,6 +1044,25 @@ class Editor {
 		this.selectionMode = true;
 	}
 
+	selectAll() {
+		let linePtr = this.editorHead;
+		this.selectionMode = true;
+		while (linePtr) {
+			let letterPtr = linePtr.lineHead;
+			while (letterPtr) {
+				letterPtr.isSelected = true;
+				if (letterPtr.nextLetter) letterPtr = letterPtr.nextLetter;
+				else break;
+			}
+			if (linePtr.nextLine) linePtr = linePtr.nextLine;
+			else break;
+		}
+		this.cursor.setCursor = {
+			line: this.editorTail,
+			letter: this.editorTail.lineTail,
+		};
+	}
+
 	map(cb: (lineText: string, index: number) => ReactNode): Array<ReactNode> {
 		const renderedLines: Array<ReactNode> = [];
 		let editorHeadPtr: Line | null = this.editorHead;
