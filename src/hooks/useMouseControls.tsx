@@ -34,6 +34,7 @@ export default function useMouseControls(
 				mouseMoveInfo.current.hasMoved = false; // reset mouse movement after click
 				mouseMoveInfo.current.offsetX = 0; // reset mouse movement after click
 				mouseMoveInfo.current.offsetY = 0; // reset mouse movement after click
+				mouseDown.current = null;
 				return;
 			}
 			editor.resetSelection();

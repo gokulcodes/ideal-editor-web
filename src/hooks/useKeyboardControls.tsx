@@ -31,28 +31,24 @@ export default function useKeyboardControls(
 
 						case 'v':
 							if (editor.selectionMode) {
-								editor.executeCommand(
-									async () =>
-										await editor.selectionCrud('PASTE')
+								await editor.executeCommand(() =>
+									editor.selectionCrud('PASTE')
 								);
 								resolve('Success');
 								return;
 							}
-							editor.executeCommand(
-								async () => await editor.paste()
-							);
+							await editor.executeCommand(() => editor.paste());
 							break;
 
 						case 'x':
 							if (editor.selectionMode) {
-								editor.executeCommand(
-									async () =>
-										await editor.selectionCrud('CUT')
+								await editor.executeCommand(() =>
+									editor.selectionCrud('CUT')
 								);
 								resolve('Success');
 								return;
 							}
-							editor.executeCommand(() => editor.cut());
+							await editor.executeCommand(() => editor.cut());
 							break;
 
 						case 'a':

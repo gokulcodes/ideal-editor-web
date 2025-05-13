@@ -823,6 +823,12 @@ class Editor {
 			const ops = this.cursor.lineCursor.addLetter(letter);
 			totalOps.push(ops);
 		}
+		setTimeout(() => {
+			this.cursor.setCursor = {
+				line: this.cursor.lineCursor,
+				letter: this.cursor.letterCursor,
+			};
+		}, 0);
 		return () => {
 			totalOps.map((func) => func());
 		};
@@ -1033,6 +1039,8 @@ class Editor {
 		}
 		if (letterPtr && letterPtr.prevLetter)
 			this.cursor.setLetterCursor = letterPtr.prevLetter;
+		else if (letterPtr) this.cursor.setLetterCursor = letterPtr;
+		else this.cursor.setLetterCursor = this.cursor.lineCursor.lineTail;
 		this.selectionMode = true;
 	}
 
