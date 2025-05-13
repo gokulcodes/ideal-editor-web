@@ -7,6 +7,18 @@ const moveInitState = {
 	offsetY: 0,
 };
 
+// const debounce = (func: Function) => {
+// 	const timeoutId = null;
+// 	return (args: MouseEvent) => {
+// 		if (timeoutId) {
+// 			clearTimeout(timeoutId);
+// 		}
+// 		setTimeout(() => {
+// 			func(args);
+// 		}, 500);
+// 	};
+// };
+
 export default function useMouseControls(
 	state: EditorStateType,
 	dispatch: React.Dispatch<ActionType>,
@@ -107,9 +119,6 @@ export default function useMouseControls(
 			if (!prevDown.current) {
 				prevDown.current = event;
 			}
-
-			editor.moveCursorToNthLine(lineEnd, textEnd);
-
 			// let dir = 'LINEAR';
 			// // console.log(prevDown.current.clientY - event.clientY);
 			// if (Math.abs(prevDown.current.clientY - event.clientY) >= 4) {
@@ -120,23 +129,77 @@ export default function useMouseControls(
 			// prevDown.current = event;
 			// }
 			// console.log(event.clientY - editorRef.offsetTop);
-			const dirVertical = event.movementY < 0 ? 'UP' : 'DOWN'; // if negative down, positive up
-			const dirHorizontal = event.movementX <= 0 ? 'LEFT' : 'RIGHT'; // if negative down, positive up
-			if (dirVertical == 'UP') {
-				[lineStart, lineEnd] = [lineEnd, lineStart];
+
+			/**
+			 *
+			 * Mouse DIRECTION LOGIC
+			 *
+			 * if mousemovement difference between mousedown and current has to be greater than 20px
+			 *
+			 * DOWN
+			 * if(LEFT)
+			 * 	moveCursor -> textStart
+			 * 	textStart = max
+			 * 	textEnd = min
+			 * if(RIGHT)
+			 * 	moveCursor -> textEnd
+			 *	textStart = min
+			 * 	textEnd = max
+			 * UP
+			 *
+			 *
+			 */
+
+			let dirVertical = 'LINEAR';
+			if (event.clientY - mouseDown.current.clientY > 20) {
+				dirVertical = 'DOWN';
+			} else if (event.clientY - mouseDown.current.clientY < -20) {
+				dirVertical = 'UP';
 			}
-			if (dirHorizontal == 'LEFT') {
-				const temp = textStart;
+
+			let dirHorizontal = 'LINEAR';
+			if (event.clientX - mouseDown.current.clientX > 6) {
+				dirHorizontal = 'RIGHT';
+			} else if (event.clientX - mouseDown.current.clientX < -6) {
+				dirHorizontal = 'LEFT';
+			}
+
+			const temp1 = lineStart;
+			lineStart = Math.min(temp1, lineEnd);
+			lineEnd = Math.max(temp1, lineEnd);
+			let cursorPosition = textEnd,
+				linePosition = lineEnd;
+			const temp = textStart;
+			if (dirVertical == 'DOWN') {
+				if (dirHorizontal == 'RIGHT') {
+					textStart = Math.min(temp, textEnd);
+					textEnd = Math.max(temp, textEnd);
+				} else {
+					textStart = Math.max(temp, textEnd);
+					textEnd = Math.min(temp, textEnd);
+				}
+			} else if (dirVertical == 'UP') {
+				if (dirHorizontal == 'RIGHT') {
+					textStart = Math.max(temp, textEnd);
+					textEnd = Math.min(temp, textEnd);
+				} else {
+					textStart = Math.min(temp, textEnd);
+					textEnd = Math.max(temp, textEnd);
+					cursorPosition = textStart;
+				}
+				linePosition = lineStart;
+			} else if (dirVertical == 'LINEAR') {
 				textStart = Math.min(temp, textEnd);
 				textEnd = Math.max(temp, textEnd);
 			}
-			// console.log(lineStart, lineEnd, dirHorizontal);
+
+			// console.log(dirHorizontal, dirVertical);
+			editor.moveCursorToNthLine(linePosition, cursorPosition);
 			editor.updateLetterSelectionOnMouseMove(
 				lineStart,
 				lineEnd,
 				textStart,
-				textEnd,
-				dirVertical
+				textEnd
 			);
 			dispatch({ type: 'type', payload: editor });
 		},

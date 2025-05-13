@@ -907,7 +907,7 @@ class Editor {
 		}
 		this.cursor.setLineCursor = linePtr;
 		let letterPtr = this.cursor.lineCursor.lineHead;
-		while (textNo > 0) {
+		while (textNo) {
 			if (letterPtr.nextLetter) letterPtr = letterPtr.nextLetter;
 			else break;
 			textNo--;
@@ -919,76 +919,104 @@ class Editor {
 		startLine: number,
 		endLine: number,
 		startPosition: number,
-		endPosition: number,
-		dir: string
+		endPosition: number
 	) {
-		console.log('line: ', startLine, endLine);
-		console.log('letter: ', startPosition, endPosition);
-		console.log('direction: ', dir);
+		// console.log('line: ', startLine, endLine);
+		// console.log('letter: ', startPosition, endPosition);
 
-		if (dir === 'UP') {
-			let linePtr: Line | null = this.editorHead,
-				lineCnt = 0;
-			while (linePtr) {
-				this.selectionMode = true;
-				let head: Letter | null = linePtr.lineHead,
-					letterCnt = 1;
-				while (head) {
-					if (startLine === endLine) {
-						if (
-							lineCnt == startLine &&
-							letterCnt >= startPosition &&
-							letterCnt < endPosition
-						) {
-							// console.log(letterCnt, startPosition, endPosition);
-							head.isSelected = true;
-						}
-					} else if (lineCnt > startLine && lineCnt < endLine) {
-						head.isSelected = true;
-					} else if (
-						lineCnt == startLine &&
-						letterCnt >= startPosition
-					) {
-						head.isSelected = true;
-					} else if (lineCnt == endLine && letterCnt <= endPosition) {
-						head.isSelected = true;
-					}
-					head = head.nextLetter;
-					letterCnt++;
-				}
-				lineCnt++;
-				if (linePtr) linePtr = linePtr.nextLine; // this is a problem
-			}
-			return;
+		function isMultine() {
+			return Math.abs(startLine - endLine) > 0;
 		}
+
+		// if (dir === 'UP') {
+		// 	let linePtr: Line | null = this.editorHead,
+		// 		lineCnt = 0;
+		// 	while (linePtr) {
+		// 		this.selectionMode = true;
+		// 		let head: Letter | null = linePtr.lineHead,
+		// 			letterCnt = 1;
+		// 		while (head) {
+		// 			if (startLine === endLine) {
+		// 				if (
+		// 					lineCnt == startLine &&
+		// 					letterCnt >= startPosition &&
+		// 					letterCnt < endPosition
+		// 				) {
+		// 					// console.log(letterCnt, startPosition, endPosition);
+		// 					head.isSelected = true;
+		// 				}
+		// 			} else if (lineCnt > startLine && lineCnt < endLine) {
+		// 				head.isSelected = true;
+		// 			} else if (
+		// 				lineCnt == startLine &&
+		// 				letterCnt >= startPosition
+		// 			) {
+		// 				head.isSelected = true;
+		// 			} else if (lineCnt == endLine && letterCnt <= endPosition) {
+		// 				head.isSelected = true;
+		// 			}
+		// 			head = head.nextLetter;
+		// 			letterCnt++;
+		// 		}
+		// 		lineCnt++;
+		// 		if (linePtr) linePtr = linePtr.nextLine; // this is a problem
+		// 	}
+		// 	return;
+		// }
 		let linePtr: Line | null = this.editorHead,
 			lineCnt = 0;
+		this.selectionMode = true;
 		while (linePtr) {
-			this.selectionMode = true;
 			let head = linePtr.lineHead.nextLetter,
-				letterCnt = 1;
+				letterCnt = 0; // 1 based indexing
+			if (!(lineCnt >= startLine && lineCnt <= endLine)) {
+				if (linePtr) linePtr = linePtr.nextLine; // this is a problem
+				lineCnt++;
+				while (head) {
+					head.isSelected = false;
+					head = head.nextLetter;
+				}
+				continue;
+			}
 			while (head) {
-				if (startLine === endLine) {
-					if (
-						lineCnt == startLine &&
-						letterCnt > startPosition &&
-						letterCnt <= endPosition
-					) {
-						// console.log(letterCnt, startPosition, endPosition);
-						head.isSelected = true;
-					}
-				} else if (lineCnt > startLine && lineCnt < endLine) {
+				/**
+				 *
+				 * If multiple lines are selected, don't do any letter cnt checks for intermediate lines
+				 * first and last line should be handled differently
+				 *
+				 * first line
+				 * 	- start position - startPosition
+				 * 	- end position - end of the line
+				 *
+				 * last line
+				 * 	- start position - start of the line
+				 * 	- end position - endPosition
+				 *
+				 */
+				if (lineCnt > startLine && lineCnt < endLine) {
+					// intermediate lines
 					head.isSelected = true;
-				} else if (lineCnt == startLine && letterCnt >= startPosition) {
+				} else if (isMultine() && lineCnt == startLine) {
+					// first line
+					if (letterCnt >= startPosition) head.isSelected = true;
+					else head.isSelected = false;
+				} else if (isMultine() && lineCnt == endLine) {
+					// last line
+					if (letterCnt < endPosition) head.isSelected = true;
+					else head.isSelected = false;
+				} else if (
+					startPosition <= letterCnt &&
+					endPosition > letterCnt
+				) {
 					head.isSelected = true;
-				} else if (lineCnt == endLine && letterCnt <= endPosition) {
-					head.isSelected = true;
+				} else {
+					head.isSelected = false;
 				}
 				head = head.nextLetter;
 				letterCnt++;
 			}
 			lineCnt++;
-			if (linePtr) linePtr = linePtr.nextLine; // this is a problem
+			if (linePtr) linePtr = linePtr.nextLine;
 		}
 	}
 
