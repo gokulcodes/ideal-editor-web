@@ -141,7 +141,7 @@ export default function EditorView() {
 			</div>
 		);
 	}
-
+	// console.log(editor);
 	return (
 		<>
 			<div className="w-11/12 md:w-6/12 xl:w-9/12 flex items-center justify-center mt-20 mb-10">

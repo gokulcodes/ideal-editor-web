@@ -35,9 +35,12 @@ export default function useKeyboardControls(
 									async () =>
 										await editor.selectionCrud('PASTE')
 								);
-								return resolve('Success');
+								resolve('Success');
+								return;
 							}
-							editor.executeCommand(() => editor.paste());
+							editor.executeCommand(
+								async () => await editor.paste()
+							);
 							break;
 
 						case 'x':
@@ -46,7 +49,8 @@ export default function useKeyboardControls(
 									async () =>
 										await editor.selectionCrud('CUT')
 								);
-								return resolve('Success');
+								resolve('Success');
+								return;
 							}
 							editor.executeCommand(() => editor.cut());
 							break;
@@ -56,8 +60,7 @@ export default function useKeyboardControls(
 								0,
 								1000,
 								0,
-								100,
-								'UP'
+								100
 							);
 							break;
 

@@ -890,7 +890,7 @@ class Editor {
 				text += letter.text;
 				letter = letter.nextLetter;
 			}
-			text += '\n';
+			if (text) text += '\n';
 			totalContent += text;
 			head = head.nextLine;
 		}
@@ -1018,6 +1018,22 @@ class Editor {
 			lineCnt++;
 			if (linePtr) linePtr = linePtr.nextLine;
 		}
+	}
+
+	updateLetterSelectionOnDoubleClick() {
+		let letterPtr: Letter | null = this.cursor.letterCursor;
+		while (letterPtr && !isSpecialCharacter(letterPtr.text)) {
+			letterPtr.isSelected = true;
+			letterPtr = letterPtr.prevLetter;
+		}
+		letterPtr = this.cursor.letterCursor;
+		while (letterPtr && !isSpecialCharacter(letterPtr.text)) {
+			letterPtr.isSelected = true;
+			letterPtr = letterPtr.nextLetter;
+		}
+		if (letterPtr && letterPtr.prevLetter)
+			this.cursor.setLetterCursor = letterPtr.prevLetter;
+		this.selectionMode = true;
 	}
 
 	map(cb: (lineText: string, index: number) => ReactNode): Array<ReactNode> {

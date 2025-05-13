@@ -27,7 +27,6 @@ export default function useMouseControls(
 	const editor = state.editor;
 	const mouseMoveInfo = useRef(moveInitState);
 	const mouseDown = useRef<MouseEvent | null>(null);
-	const prevDown = useRef<MouseEvent | null>(null);
 
 	const handleClick = useCallback(
 		(event: MouseEvent) => {
@@ -62,13 +61,21 @@ export default function useMouseControls(
 		[dispatch, editorRef, editor]
 	);
 
+	const handleDoubleClick = useCallback(
+		(event: MouseEvent) => {
+			handleClick(event);
+			editor.updateLetterSelectionOnDoubleClick();
+			dispatch({ type: 'type', payload: editor });
+		},
+		[dispatch, editor, handleClick]
+	);
+
 	const handleMouseDown = useCallback(
 		(event: MouseEvent) => {
 			if (!editorRef) {
 				return;
 			}
 			mouseDown.current = event;
-			prevDown.current = event;
 			mouseMoveInfo.current.offsetX =
 				event.clientX - editorRef.offsetLeft;
 			mouseMoveInfo.current.offsetY = event.clientY - editorRef.offsetTop;
@@ -116,9 +123,6 @@ export default function useMouseControls(
 				mouseUpTarget = mouseUpTarget.parentElement;
 			}
 
-			if (!prevDown.current) {
-				prevDown.current = event;
-			}
 			// let dir = 'LINEAR';
 			// // console.log(prevDown.current.clientY - event.clientY);
 			// if (Math.abs(prevDown.current.clientY - event.clientY) >= 4) {
@@ -218,11 +222,13 @@ export default function useMouseControls(
 		editorRef.addEventListener('mousemove', handleMouseMove);
 		editorRef.addEventListener('mouseup', handleMouseUp);
 		editorRef.addEventListener('click', handleClick);
+		editorRef.addEventListener('dblclick', handleDoubleClick);
 		return () => {
 			editorRef.removeEventListener('mousedown', handleMouseDown);
 			editorRef.removeEventListener('mousemove', handleMouseMove);
 			editorRef.removeEventListener('mouseup', handleMouseUp);
 			editorRef.removeEventListener('click', handleClick);
+			editorRef.removeEventListener('dblclick', handleDoubleClick);
 		};
 	}, [
 		editorRef,
@@ -230,5 +236,6 @@ export default function useMouseControls(
 		handleMouseMove,
 		handleMouseUp,
 		handleClick,
+		handleDoubleClick,
 	]);
 }

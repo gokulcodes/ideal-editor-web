@@ -82,8 +82,9 @@ body {
 }
 
 .selectedText {
-	background-color: rgba(255, 255, 255, 0.236);
-	padding-bottom: 4px;
+	background-color: rgba(255, 255, 255, 0.1);
+	padding-bottom: 3px;
+	border-radius: 4px;
 	color: white;
 }
 
