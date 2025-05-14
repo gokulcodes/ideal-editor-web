@@ -1,5 +1,6 @@
 'use client';
 import editorContext from '@/controller/editorContext';
+import idealContext from '@/controller/idealContext';
 import { useContext, memo, useEffect, useRef } from 'react';
 
 const NumberScroller = memo((props: { selectedNum: string }) => {
@@ -54,21 +55,27 @@ function NumberAnimate(props: { counter: number }) {
 			>
 				{numberMapper}
 			</div>
-			<div className="bg-gradient-to-t from-[#0a0a0a] via-transparent via-50% to-[#0a0a0a] absolute w-full h-8 z-50 -top-2 left-0 bottom-0" />
+			{/* <div className="bg-gradient-to-t from-[#0a0a0a] via-transparent via-50% to-[#0a0a0a] absolute w-full h-8 z-50 -top-2 left-0 bottom-0" /> */}
 		</div>
 	);
 }
 
 export default function EditorStats() {
 	const { state } = useContext(editorContext);
+	const {
+		state: { selectedFileId },
+	} = useContext(idealContext);
 
+	if (!selectedFileId) {
+		return null;
+	}
 	return (
 		<div className="fixed right-4 bottom-2 flex flex-row items-center gap-2">
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Lines </p>
 				<NumberAnimate counter={state.editor.totalLineCount} />
 			</div>
-			<span className=" transform -scale-x-10">|</span>
+			<span className="opacity-40">|</span>
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Characters</p>
 				<NumberAnimate counter={state.editor.totalLetterCount} />
