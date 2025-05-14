@@ -7,6 +7,8 @@ import { isLineBreak, isSpecialCharacter } from './editorUtils';
 class Editor {
 	editorHead: Line;
 	editorTail: Line;
+	totalLineCount: number;
+	totalLetterCount: number;
 	cursor: Cursor;
 	selectionMode: boolean;
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -20,6 +22,8 @@ class Editor {
 		this.selectionMode = false;
 		this.undoOperations = [];
 		this.redoOperations = [];
+		this.totalLineCount = 0;
+		this.totalLetterCount = 0;
 		this.initializeEditorContent(content);
 	}
 
@@ -89,6 +93,7 @@ class Editor {
 			// Updating editorTail node once we insert a new line
 			this.editorTail = this.cursor.lineCursor;
 		}
+		this.totalLineCount += 1;
 		return () => {
 			this.deleteLines(this.cursor.lineCursor, this.cursor.lineCursor);
 		};
@@ -98,14 +103,18 @@ class Editor {
 		const prev = start.prevLine;
 		const next = end.nextLine;
 		let copyLineContent = '',
+			linesTobeDeleted = 0,
+			lettersTobeDeleted = 0,
 			temp: Line | null = start;
 		while (temp && temp != next) {
+			linesTobeDeleted++;
 			let letterTemp: Letter | null = temp.lineHead,
 				txt = '';
 			while (letterTemp) {
 				txt += letterTemp.text;
 				letterTemp = letterTemp.nextLetter;
 			}
+			lettersTobeDeleted += txt.length;
 			copyLineContent += txt + '\n';
 			temp = temp.nextLine;
 		}
@@ -119,6 +128,8 @@ class Editor {
 					this.editorHead,
 					this.editorHead.lineHead
 				);
+				this.totalLineCount -= linesTobeDeleted;
+				this.totalLetterCount -= lettersTobeDeleted;
 				return () => {
 					for (const letter of copyLineContent) {
 						if (isLineBreak(letter)) {
@@ -132,6 +143,8 @@ class Editor {
 			next.prevLine = null;
 			this.editorHead = next;
 			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+			this.totalLineCount -= linesTobeDeleted;
+			this.totalLetterCount -= lettersTobeDeleted;
 			return () => {
 				for (const letter of copyLineContent) {
 					if (isLineBreak(letter)) {
@@ -147,6 +160,8 @@ class Editor {
 			this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
 			prev.nextLine = null;
 			this.editorTail = prev;
+			this.totalLineCount -= linesTobeDeleted;
+			this.totalLetterCount -= lettersTobeDeleted;
 			return () => {
 				for (const letter of copyLineContent) {
 					if (isLineBreak(letter)) {
@@ -161,6 +176,8 @@ class Editor {
 		this.moveCursor(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 		prev.nextLine = next;
 		next.prevLine = prev;
+		this.totalLineCount -= linesTobeDeleted;
+		this.totalLetterCount -= lettersTobeDeleted;
 		return () => {
 			console.log(copyLineContent);
 			for (const letter of copyLineContent) {
@@ -781,7 +798,6 @@ class Editor {
 				break;
 			}
 		}
-
 		const ops = this.cursor.lineCursor.deleteLetters(
 			leftWhiteSpace,
 			this.cursor.letterCursor
@@ -804,6 +820,8 @@ class Editor {
 		line.lineTail.prevLetter = line.lineHead;
 		line.lineTail = line.lineHead;
 		this.cursor.setLetterCursor = line.lineHead;
+		this.totalLineCount -= 1;
+		this.totalLetterCount -= letters.length;
 		return () => {
 			for (const letter of letters) {
 				this.cursor.lineCursor.addLetter(letter);
@@ -873,13 +891,35 @@ class Editor {
 	}
 
 	initializeEditorContent(content: string) {
+		let linesInserted = 0,
+			lettersInserted = 0;
 		for (const letter of content) {
 			if (isLineBreak(letter)) {
 				this.insertLine();
+				linesInserted++;
 				continue;
 			}
+			lettersInserted++;
 			this.cursor.lineCursor.addLetter(letter);
 		}
+		this.totalLetterCount = lettersInserted;
+		this.totalLineCount = linesInserted;
+		// document.dispatchEvent(
+		// 	new CustomEvent('onupdatelettercount', {
+		// 		detail: {
+		// 			operation: 'INC',
+		// 			count: content.replace('\n', '').length,
+		// 		},
+		// 	})
+		// );
+		// document.dispatchEvent(
+		// 	new CustomEvent('onupdatelinecount', {
+		// 		detail: {
+		// 			operation: 'INC',
+		// 			count: linesInserted,
+		// 		},
+		// 	})
+		// );
 		// this.cursor.setCursor = {
 		// 	line: this.cursor.lineCursor,
 		// 	letter: this.cursor.letterCursor,

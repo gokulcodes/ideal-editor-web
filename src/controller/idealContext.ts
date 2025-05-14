@@ -67,6 +67,7 @@ export const reducer = (
 				...state,
 				isReaderMode: action.payload.isReaderMode,
 			};
+
 		default:
 			return state;
 	}

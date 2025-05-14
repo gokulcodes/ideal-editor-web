@@ -1,3 +1,4 @@
+'use client';
 import EditorView from '@/components/EditorView';
 import EditorContext, {
 	editorState,
@@ -5,6 +6,7 @@ import EditorContext, {
 } from '../../controller/editorContext';
 import { useReducer } from 'react';
 import Header from './Header';
+import EditorStats from './EditorStats';
 
 export default function Canvas() {
 	const [state, dispatch] = useReducer(reducer, editorState);
@@ -14,6 +16,7 @@ export default function Canvas() {
 			<Header />
 			<EditorContext.Provider value={{ state, dispatch }}>
 				<EditorView />
+				<EditorStats />
 			</EditorContext.Provider>
 		</main>
 	);

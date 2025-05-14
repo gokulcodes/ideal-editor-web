@@ -1,3 +1,4 @@
+'use client';
 import { memo, useContext, useRef } from 'react';
 import FileView from './FileView';
 import LogoView from './LogoView';

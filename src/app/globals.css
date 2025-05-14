@@ -154,6 +154,11 @@ details[open] summary::before {
 	scrollbar-width: none;
 }
 
+#editorstats * {
+	transition: all 2s ease-in-out;
+	scroll-behavior: smooth;
+}
+
 /* #wrapper {
 	transition: all 0.8s ease-in-out;
 } */

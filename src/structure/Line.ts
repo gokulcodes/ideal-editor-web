@@ -46,6 +46,8 @@ class Line {
 		// After adding a new letter, update the cursor position
 		this.editor.cursor.setLetterCursor = newLetter;
 
+		this.editor.totalLetterCount += 1;
+
 		return () => {
 			this.deleteLetters(
 				this.editor.cursor.letterCursor,
@@ -66,7 +68,7 @@ class Line {
 			temp: Letter | null = startPosition;
 		while (temp && temp != endPosition.nextLetter) {
 			stringToBeDeleted += temp.text;
-			if (!temp.nextLetter) stringToBeDeleted += '\n';
+			// if (!temp.nextLetter) stringToBeDeleted += '\n';
 			temp = temp.nextLetter;
 		}
 		/**
@@ -110,6 +112,8 @@ class Line {
 				line: prevToCurrLine,
 				letter: nextAvailableLetter,
 			};
+			this.editor.totalLetterCount -= stringToBeDeleted.length;
+			this.editor.totalLineCount -= 1;
 			return () => {
 				for (const letter of stringToBeDeleted) {
 					if (isLineBreak(letter)) {
@@ -128,6 +132,7 @@ class Line {
 			prevToStart.nextLetter = null;
 			this.editor.cursor.lineCursor.lineTail = prevToStart;
 			this.editor.cursor.setLetterCursor = prevToStart;
+			this.editor.totalLetterCount -= stringToBeDeleted.length;
 			return () => {
 				for (const letter of stringToBeDeleted) {
 					if (isLineBreak(letter)) {
@@ -143,6 +148,7 @@ class Line {
 		nextToEnd.prevLetter = prevToStart;
 		// console.log(prevToStart)
 		this.editor.cursor.setLetterCursor = prevToStart;
+		this.editor.totalLetterCount -= stringToBeDeleted.length;
 
 		return () => {
 			for (const letter of stringToBeDeleted) {
