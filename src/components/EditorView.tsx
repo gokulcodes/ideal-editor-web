@@ -11,6 +11,7 @@ import React, {
 	Fragment,
 	useRef,
 	useState,
+	// useCallback,
 	// useState,
 } from 'react';
 import { File } from '@/types/types';
@@ -51,9 +52,29 @@ export default function EditorView() {
 		});
 		if (cursorRef && cursorRef.current) observer.observe(cursorRef.current);
 	}
+
+	useEffect(() => {
+		if (!editorRef.current) {
+			return;
+		}
+		const editorDom = editorRef.current as HTMLDivElement;
+		const width = editorDom.getBoundingClientRect().width;
+		editor.handleLineBreaks(width);
+	}, [state, editor]);
+
+	// // useEffect(() => {
+	// // 	window.editor = editor;
+	// // }, [state]);
+	// const handleEditorResize = useCallback(() => {
+	// 	const editorDom = editorRef.current as HTMLDivElement;
+	// 	const width = editorDom.getBoundingClientRect().width;
+	// 	editor.handleLineBreaks(width);
+	// 	console.log('editor', width);
+	// }, [editorRef, dispatch]);
+
 	// useEffect(() => {
-	// 	window.editor = editor;
-	// }, [state]);
+	// 	window.addEventListener('resize', handleEditorResize);
+	// }, [handleEditorResize]);
 
 	useEffect(() => {
 		cursorListener();
@@ -66,11 +87,7 @@ export default function EditorView() {
 		editorRef.current
 	);
 	useMouseControls(state, dispatch, editorRef.current);
-	const { cursorVisibility } = useCursorListener(
-		editorRef.current,
-		cursorRef.current,
-		isReaderMode
-	);
+	useCursorListener(editorRef.current, cursorRef.current, isReaderMode);
 
 	useEffect(() => {
 		editorRef.current?.addEventListener('scroll', () => {
@@ -121,12 +138,6 @@ export default function EditorView() {
 		return () => {};
 	}, [selectedFileId, dispatch]);
 
-	useEffect(() => {
-		if (!cursorVisibility) {
-			editor.insertLine(); // automatic line insertion
-		}
-	}, [cursorVisibility]);
-
 	if (!currentContent) {
 		return (
 			<div className="w-full h-[100vh] flex flex-col items-center justify-center gap-10">
@@ -156,7 +167,7 @@ export default function EditorView() {
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
-				className="relative outline-none select-none w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh] overflow-hidden"
+				className="relative outline-none select-none w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh]"
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {
@@ -192,10 +203,11 @@ const LineComponent = memo(
 	}) =>
 		createElement('pre', {
 			id: `line_${props.lineIndex}`,
-			before: `${props.lineIndex}`,
+			// style: { width: 'fit-content', wordBreak: 'break-all' },
+			// before: `${props.lineIndex}`,
 			// onClick: (event) => props.editor.moveCursorToNthLine(props.lineIndex, 0),
 			// style: { wordBreak: 'break-all' },
-			className: `h-8 text-xl ${props.isReaderMode ? 'font-sans' : 'font-editor'} relative`,
+			className: `h-8  text-xl ${props.isReaderMode ? 'font-sans' : 'font-editor'} relative`,
 			// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 			dangerouslySetInnerHTML: { __html: props.htmlString },
 		})

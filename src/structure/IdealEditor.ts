@@ -58,11 +58,11 @@ class Editor {
 		}
 	}
 
-	insertLine() {
+	insertLine(linePosition = this.cursor.lineCursor) {
 		const newLine = new Line(this);
 
 		// Linked new line next to current cursor line
-		const currLine = this.cursor.lineCursor;
+		const currLine = linePosition;
 		const nextToCurrLine = currLine.nextLine;
 		newLine.prevLine = currLine;
 		newLine.nextLine = nextToCurrLine;
@@ -87,11 +87,12 @@ class Editor {
 			nextAvailableLetter.prevLetter = newLine.lineHead;
 		}
 		currLetterPosition.nextLetter = null;
-		this.cursor.setCursor = { line: newLine, letter: newLine.lineHead };
-		// this.cursor.letterCursor = ;
-		if (!this.cursor.lineCursor.nextLine) {
-			// Updating editorTail node once we insert a new line
-			this.editorTail = this.cursor.lineCursor;
+		if (linePosition === this.cursor.lineCursor) {
+			this.cursor.setCursor = { line: newLine, letter: newLine.lineHead };
+			if (!this.cursor.lineCursor.nextLine) {
+				// Updating editorTail node once we insert a new line
+				this.editorTail = this.cursor.lineCursor;
+			}
 		}
 		this.totalLineCount += 1;
 		return () => {
@@ -941,6 +942,98 @@ class Editor {
 			head = head.nextLine;
 		}
 		return totalContent;
+	}
+
+	handleLineBreaks(containerWidth: number) {
+		/**
+		 *  - unlink overflowed character from the line 
+			- insert it to the beginning of the next line
+			- if the next line is overflowed because of the character's inserted
+			- unlink the overflowed characters of the next line
+			- do this until the no-more line's are overflowing
+		 */
+		function getCharacterCount(line: Line) {
+			let letterPtr: Letter | null = line.lineHead,
+				cnt = 0;
+			while (letterPtr) {
+				cnt++;
+				letterPtr = letterPtr.nextLetter;
+			}
+			return cnt;
+		}
+		function getCharacterCountTillCursor(cursor: Cursor) {
+			let letterPtr: Letter | null = cursor.lineCursor.lineHead,
+				cnt = 0;
+			while (letterPtr && letterPtr !== cursor.letterCursor) {
+				cnt++;
+				letterPtr = letterPtr.nextLetter;
+			}
+			return cnt;
+		}
+
+		let linePtr: Line | null = this.editorHead;
+		const characterAllowed = Math.floor((containerWidth - 24) / 12);
+		while (linePtr) {
+			const overflowedCharacters = getCharacterCount(linePtr);
+			if (overflowedCharacters - characterAllowed >= 0) {
+				let letterPtr: Letter | null = linePtr.lineTail,
+					cnt = overflowedCharacters - characterAllowed;
+				let chars = '';
+				while (letterPtr && cnt--) {
+					chars += letterPtr.text;
+					letterPtr = letterPtr.prevLetter;
+				}
+				if (letterPtr) {
+					letterPtr.nextLetter = null;
+					linePtr.lineTail = letterPtr;
+				}
+				let nextLine = linePtr.nextLine;
+				if (!nextLine) {
+					this.insertLine(linePtr);
+					nextLine = linePtr.nextLine;
+					if (nextLine) this.editorTail = nextLine;
+				}
+
+				if (nextLine) {
+					for (const letter of chars) {
+						nextLine.addLetter(letter, nextLine.lineHead);
+					}
+				}
+			} else {
+				// let canBeMoved = Math.abs(
+				// 	overflowedCharacters - characterAllowed
+				// );
+				// const nextLine = linePtr.nextLine;
+				// if (!nextLine) {
+				// 	break;
+				// }
+				// console.log(overflowedCharacters, characterAllowed);
+				// let letterPtr = nextLine?.lineHead.nextLetter;
+				// let chars = '';
+				// while (letterPtr && canBeMoved--) {
+				// 	chars += letterPtr?.text;
+				// 	letterPtr = letterPtr?.nextLetter;
+				// }
+				// if (letterPtr) nextLine.lineHead.nextLetter = letterPtr;
+				// // let currLetterPtr = linePtr.lineTail;
+				// for (const letter of chars) {
+				// 	linePtr.addLetter(letter, linePtr.lineTail);
+				// }
+			}
+			linePtr = linePtr.nextLine;
+		}
+
+		// cursor movement to next line
+		const overflowedCharacters = getCharacterCountTillCursor(this.cursor); // this is a problem
+		if (overflowedCharacters - characterAllowed >= 0) {
+			const nextLine: Line | null = this.cursor.lineCursor.nextLine;
+			if (nextLine) {
+				this.cursor.setCursor = {
+					line: nextLine,
+					letter: nextLine?.lineHead,
+				};
+			}
+		}
 	}
 
 	/** Mouse Operations */

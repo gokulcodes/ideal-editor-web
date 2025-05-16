@@ -23,10 +23,11 @@ class Line {
 	 * @param cursor
 	 * @param value
 	 */
-	addLetter(value: string) {
+	addLetter(value: string, letterPosition = this.editor.cursor.letterCursor) {
 		const newLetter = new Letter(value);
-
-		const letterPosition = this.editor.cursor.letterCursor;
+		const isCursorMovement =
+			letterPosition === this.editor.cursor.letterCursor;
+		// const letterPosition = this.editor.cursor.letterCursor;
 
 		// letterPosition can never be null because of our sentinal node
 		// Beginning of the line
@@ -38,13 +39,13 @@ class Line {
 		newLetter.prevLetter = letterPosition; // point newly created letter's previous pointer to letterPosition
 		newLetter.nextLetter = nextAvailableLetter; // link newLetter's nextLetter to previous next letter pointer
 		if (nextAvailableLetter) nextAvailableLetter.prevLetter = newLetter;
-		if (newLetter.nextLetter == null) {
+		if (newLetter.nextLetter == null && isCursorMovement) {
 			// End of the line
 			this.editor.cursor.lineCursor.lineTail = newLetter;
 		}
 
 		// After adding a new letter, update the cursor position
-		this.editor.cursor.setLetterCursor = newLetter;
+		if (isCursorMovement) this.editor.cursor.setLetterCursor = newLetter;
 
 		this.editor.totalLetterCount += 1;
 
