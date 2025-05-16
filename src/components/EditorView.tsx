@@ -22,7 +22,7 @@ export default function EditorView() {
 	const {
 		state: { selectedFileId, isReaderMode },
 	} = useContext(idealContext);
-	const [currentContent, setCurrentContent] = useState<File>();
+	const [currentContent, setCurrentContent] = useState<File | null>();
 	const editor = state.editor;
 	const editorRef = useRef<HTMLDivElement>(null);
 	const cursorRef = useRef<HTMLDivElement>(null);
@@ -109,6 +109,7 @@ export default function EditorView() {
 
 	useEffect(() => {
 		if (!selectedFileId) {
+			setCurrentContent(null);
 			return;
 		}
 		const prevContentInfo = currentContent;

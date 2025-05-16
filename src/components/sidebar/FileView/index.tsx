@@ -192,6 +192,34 @@ export default function FileView() {
 		[dispatch, state]
 	);
 
+	useEffect(() => {
+		function handleFileDelete(event: KeyboardEvent) {
+			event.stopPropagation();
+			if (event.key !== 'Backspace') {
+				return;
+			}
+			const files = localStorage.getItem('files');
+			if (files) {
+				let parsedFiles: Array<File | Folder> = JSON.parse(files);
+				parsedFiles = parsedFiles.filter(
+					(file: File | Folder) => file.id !== state.selectedFileId
+				);
+				dispatch({
+					type: 'fileUpdate',
+					payload: { ...state, files: parsedFiles },
+				});
+				localStorage.setItem('files', JSON.stringify(parsedFiles));
+				localStorage.removeItem(state.selectedFileId);
+				if (parsedFiles.length) updateSelectedFile(parsedFiles[0].id);
+				else updateSelectedFile('');
+			}
+		}
+		document.addEventListener('keyup', handleFileDelete);
+		return () => {
+			document.removeEventListener('keyup', handleFileDelete);
+		};
+	}, [dispatch, state, updateSelectedFile]);
+
 	if (!Array.isArray(state.files)) {
 		return (
 			<div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
