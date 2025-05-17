@@ -63,10 +63,10 @@ function NumberAnimate(props: { counter: number }) {
 export default function EditorStats() {
 	const { state } = useContext(editorContext);
 	const {
-		state: { selectedFileId },
+		state: { selectedFileId, isReaderMode },
 	} = useContext(idealContext);
 
-	if (!selectedFileId) {
+	if (!selectedFileId || isReaderMode) {
 		return null;
 	}
 	return (

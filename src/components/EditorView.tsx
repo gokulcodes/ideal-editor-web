@@ -168,7 +168,7 @@ export default function EditorView() {
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
-				className="relative outline-none select-none w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh]"
+				className={`relative outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh]`}
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {

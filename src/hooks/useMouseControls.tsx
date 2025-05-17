@@ -1,5 +1,6 @@
 import { ActionType, EditorStateType } from '@/controller/editorContext';
-import { useCallback, useEffect, useRef } from 'react';
+import idealContext from '@/controller/idealContext';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 
 const moveInitState = {
 	hasMoved: false,
@@ -25,6 +26,9 @@ export default function useMouseControls(
 	editorRef: HTMLDivElement | null
 ) {
 	const editor = state.editor;
+	const {
+		state: { isReaderMode },
+	} = useContext(idealContext);
 	const mouseMoveInfo = useRef(moveInitState);
 	const mouseDown = useRef<MouseEvent | null>(null);
 
@@ -73,7 +77,7 @@ export default function useMouseControls(
 
 	const handleMouseDown = useCallback(
 		(event: MouseEvent) => {
-			if (!editorRef) {
+			if (!editorRef || isReaderMode) {
 				return;
 			}
 			mouseDown.current = event;
@@ -81,7 +85,7 @@ export default function useMouseControls(
 				event.clientX - editorRef.offsetLeft;
 			mouseMoveInfo.current.offsetY = event.clientY - editorRef.offsetTop;
 		},
-		[editorRef]
+		[editorRef, isReaderMode]
 	);
 
 	const handleMouseMove = useCallback(

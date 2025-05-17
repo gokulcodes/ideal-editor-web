@@ -5,6 +5,7 @@ import { RiFocusLine, RiGithubLine } from 'react-icons/ri';
 
 export default function CanvasOptions() {
 	const { state, dispatch } = useContext(idealContext);
+	const isReaderMode = state.isReaderMode;
 	function handleFocusMode() {
 		dispatch({
 			type: 'toggleFocusMode',
@@ -24,7 +25,7 @@ export default function CanvasOptions() {
 			<button
 				onClick={handleReaderMode}
 				style={{ width: 'fit-content' }}
-				className="border border-white/20 text-white/80 hover:text-white cursor-pointer hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				className={`border border-white/20 text-white/80 hover:text-white cursor-pointer ${isReaderMode ? 'bg-white/30' : ''} hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
 			>
 				<MdOutlineChromeReaderMode />
 				Reader Mode
