@@ -1,6 +1,5 @@
 import idealContext from '@/controller/idealContext';
 import { useCallback, useContext, useEffect, memo, useRef } from 'react';
-import { CiFolderOn } from 'react-icons/ci';
 import { File, Folder } from '@/types/types';
 import { v4 as uuid } from 'uuid';
 
@@ -109,7 +108,11 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 			className={`flex mt-2 text-black items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
 		>
 			<span className="text-black">
-				<CiFolderOn />
+				<img
+					src="/icons/add-folder.png"
+					alt="file-mode"
+					className="w-4 dark:invert h-4"
+				/>
 			</span>
 			<input
 				autoFocus

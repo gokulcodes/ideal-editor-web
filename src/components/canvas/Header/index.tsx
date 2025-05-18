@@ -1,6 +1,5 @@
 import idealContext from '@/controller/idealContext';
 import CanvasOptions from '../../canvas/CanvasOptions';
-import { TbLayoutSidebarLeftCollapse } from 'react-icons/tb';
 import { useCallback, useContext } from 'react';
 
 function Header() {
@@ -29,7 +28,11 @@ function Header() {
 						onClick={handleSidebarCollapse}
 						className="p-2 absolute dark:invert text-black left-4 top-4 cursor-pointer hover:bg-black/5 border border-black/20 rounded-sm"
 					>
-						<TbLayoutSidebarLeftCollapse size={20} />
+						<img
+							src="/icons/sidebar.png"
+							alt="file-mode"
+							className="w-4 h-4"
+						/>
 					</button>
 				) : null}
 				<img

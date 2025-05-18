@@ -7,11 +7,9 @@ import {
 	useEffect,
 	useRef,
 } from 'react';
-import { CiFileOn } from 'react-icons/ci';
 import { File, Folder } from '@/types/types';
 import FolderCreateView from './FolderCreateView';
 import FileCreateView from './FileCreateView';
-import { VscNewFile, VscNewFolder } from 'react-icons/vsc';
 
 type RenderFolderType = {
 	updateSelectedFile: (id: string) => void;
@@ -70,7 +68,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 
 	return (
 		<div
-			className={`flex flex-col overflow-hidden  dark:invert w-full relative ${isInnerFolderView ? '-left-0 border-l border-black/10' : ''}`}
+			className={`flex flex-col overflow-hidden w-full relative ${isInnerFolderView ? '-left-0 border-l border-black/10' : ''}`}
 		>
 			{files.map((file) => {
 				if (file.type === 'folder') {
@@ -129,7 +127,11 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								updateSelectedFile(file.id);
 							}}
 						>
-							<CiFileOn />
+							<img
+								src="/icons/file.png"
+								alt="file-mode"
+								className="w-4 h-4"
+							/>
 							<span className="pl-2 pointer-events-none">
 								{file.name}
 							</span>
@@ -263,28 +265,37 @@ export default function FileView() {
 					onClick={openFileCreate}
 					className="px-4 py-2 flex items-center gap-2  cursor-pointer text-black dark:invert hover:bg-black/10 border border-black/20 rounded-sm"
 				>
-					<VscNewFile />
+					<img
+						src="/icons/add-file.png"
+						alt="file-mode"
+						className="w-4 h-4"
+					/>
 					New File
 				</button>
 				<button
 					onClick={openFolderCreate}
 					className="px-4 py-2 flex items-center gap-2 cursor-pointer text-black dark:invert hover:bg-black/10 border border-black/20 rounded-sm"
 				>
-					<VscNewFolder />
+					<img
+						src="/icons/add-folder.png"
+						alt="file-mode"
+						className="w-4 h-4"
+					/>
 					New Folder
 				</button>
 			</div>
 			<p className="uppercase tracking-widest mx-5 my-3 opacity-80 text-xs">
 				Files & Folders
 			</p>
-			<Suspense fallback={<p>Loading...</p>}>
-				<RenderFolder
-					selectedFileId={state.selectedFileId}
-					updateSelectedFile={updateSelectedFile}
-					files={state.files}
-					isInnerFolderView={false}
-				/>
-				{/* {highlightPosition && (
+			<div className="w-full h-full dark:invert">
+				<Suspense fallback={<p>Loading...</p>}>
+					<RenderFolder
+						selectedFileId={state.selectedFileId}
+						updateSelectedFile={updateSelectedFile}
+						files={state.files}
+						isInnerFolderView={false}
+					/>
+					{/* {highlightPosition && (
 					<div
 						style={{
 							top: `${highlightPosition?.top - scrollTop}px`,
@@ -293,7 +304,8 @@ export default function FileView() {
 						className="w-full bg-black/10 pointer-events-none absolute left-0"
 					/>
 				)} */}
-			</Suspense>
+				</Suspense>
+			</div>
 			{state.newFileCreate && !state.selectedFileId && (
 				<FileCreateView isInnerFolderView={false} />
 			)}

@@ -113,8 +113,8 @@ summary::marker {
 		left: 20px;
 		top: 50%;
 		transform: translateY(-50%);
-		width: 15px;
-		height: 15px;
+		width: 18px;
+		height: 18px;
 		background-image: url('/folder-closed.png');
 		background-size: contain;
 		background-repeat: no-repeat;
@@ -136,8 +136,8 @@ summary::marker {
 		left: 20px;
 		top: 50%;
 		transform: translateY(-50%);
-		width: 15px;
-		height: 15px;
+		width: 18px;
+		height: 18px;
 		background-image: url('/folder-closed.png');
 		background-size: contain;
 		background-repeat: no-repeat;

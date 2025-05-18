@@ -1,7 +1,6 @@
 import idealContext from '@/controller/idealContext';
 import { File, Folder } from '@/types/types';
 import { useCallback, useContext, useEffect, memo, useRef } from 'react';
-import { CiFileOn } from 'react-icons/ci';
 import { v4 as uuid } from 'uuid';
 
 function FileCreateView(props: { isInnerFolderView: boolean }) {
@@ -107,7 +106,12 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 			className={`flex mt-2 items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
 		>
 			<span>
-				<CiFileOn />
+				<img
+					src="/icons/add-file.png"
+					alt="file-mode"
+					className="w-4 dark:invert h-4"
+				/>
+				{/* <CiFileOn /> */}
 			</span>
 			<input
 				autoFocus

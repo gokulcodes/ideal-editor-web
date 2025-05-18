@@ -1,7 +1,5 @@
 import idealContext from '@/controller/idealContext';
 import { useContext } from 'react';
-import { MdOutlineChromeReaderMode } from 'react-icons/md';
-import { RiFocusLine, RiGithubLine } from 'react-icons/ri';
 
 export default function CanvasOptions() {
 	const { state, dispatch } = useContext(idealContext);
@@ -27,7 +25,12 @@ export default function CanvasOptions() {
 				style={{ width: 'fit-content' }}
 				className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-white/30' : ''} hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
 			>
-				<MdOutlineChromeReaderMode />
+				<img
+					src="/icons/reader-mode.png"
+					alt="reader-mode"
+					className="w-4 h-4"
+				/>
+				{/* <MdOutlineChromeReaderMode /> */}
 				Reader Mode
 			</button>
 			<button
@@ -35,7 +38,11 @@ export default function CanvasOptions() {
 				onClick={handleFocusMode}
 				className="border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
-				<RiFocusLine />
+				<img
+					src="/icons/focus-mode.png"
+					alt="reader-mode"
+					className="w-4 h-4"
+				/>
 				Focus Mode
 			</button>
 			<a
@@ -45,7 +52,11 @@ export default function CanvasOptions() {
 				style={{ width: 'fit-content' }}
 				className="border dark:invert absolute right-4 top-4 border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md p-3 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
-				<RiGithubLine size={20} />
+				<img
+					src="/icons/github.png"
+					alt="reader-mode"
+					className="w-4 h-4"
+				/>
 				{/* Github */}
 			</a>
 			{/* <button

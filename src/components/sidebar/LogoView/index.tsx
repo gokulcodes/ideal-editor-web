@@ -1,6 +1,5 @@
 import idealContext from '@/controller/idealContext';
 import { useContext } from 'react';
-import { TbLayoutSidebarLeftCollapse } from 'react-icons/tb';
 
 export default function LogoView() {
 	const { state, dispatch } = useContext(idealContext);
@@ -22,7 +21,11 @@ export default function LogoView() {
 				onClick={handleSidebarCollapse}
 				className="p-2 cursor-pointer  hover:bg-black/10 border text-black border-black/20 rounded-sm"
 			>
-				<TbLayoutSidebarLeftCollapse size={24} />
+				<img
+					src="/icons/sidebar.png"
+					alt="sidebar"
+					className="w-5 h-5"
+				/>
 			</button>
 			<img
 				className="w-20 invert -0 h-auto"

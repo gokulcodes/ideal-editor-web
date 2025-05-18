@@ -2,7 +2,7 @@ import { File, Folder } from '@/types/types';
 import { createContext } from 'react';
 
 export const initialState = {
-	isSidebarOpen: false,
+	isSidebarOpen: true,
 	isSidebarAnimate: true,
 	newFileCreate: false,
 	newFolderCreate: false,
