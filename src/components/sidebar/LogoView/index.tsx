@@ -17,15 +17,15 @@ export default function LogoView() {
 		}, 400);
 	}
 	return (
-		<div className="flex flex-row items-center gap-4 p-4 border-b border-white/20">
+		<div className="flex flex-row items-center gap-4 p-4 dark:invert border-b border-black/20">
 			<button
 				onClick={handleSidebarCollapse}
-				className="p-2 cursor-pointer hover:bg-white/10 border border-white/20 rounded-sm"
+				className="p-2 cursor-pointer  hover:bg-black/10 border text-black border-black/20 rounded-sm"
 			>
 				<TbLayoutSidebarLeftCollapse size={24} />
 			</button>
 			<img
-				className="w-20 h-auto"
+				className="w-20 invert -0 h-auto"
 				src="/ideal.png"
 				alt="ideal-logo"
 			/>

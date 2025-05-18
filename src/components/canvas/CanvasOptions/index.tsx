@@ -25,7 +25,7 @@ export default function CanvasOptions() {
 			<button
 				onClick={handleReaderMode}
 				style={{ width: 'fit-content' }}
-				className={`border border-white/20 text-white/80 hover:text-white cursor-pointer ${isReaderMode ? 'bg-white/30' : ''} hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
+				className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-white/30' : ''} hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
 			>
 				<MdOutlineChromeReaderMode />
 				Reader Mode
@@ -33,7 +33,7 @@ export default function CanvasOptions() {
 			<button
 				style={{ width: 'fit-content' }}
 				onClick={handleFocusMode}
-				className="border border-white/20 text-white/80 hover:text-white cursor-pointer hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				className="border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
 				<RiFocusLine />
 				Focus Mode
@@ -43,7 +43,7 @@ export default function CanvasOptions() {
 				target="_blank"
 				referrerPolicy="no-referrer"
 				style={{ width: 'fit-content' }}
-				className="border absolute right-4 top-4 border-white/20 text-white/80 hover:text-white cursor-pointer hover:bg-white/20 rounded-md p-3 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				className="border dark:invert absolute right-4 top-4 border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md p-3 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
 			>
 				<RiGithubLine size={20} />
 				{/* Github */}

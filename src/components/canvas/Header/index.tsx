@@ -27,7 +27,7 @@ function Header() {
 				{!state.isSidebarOpen ? (
 					<button
 						onClick={handleSidebarCollapse}
-						className="p-2 absolute left-4 top-4 cursor-pointer hover:bg-white/5 border border-white/20 rounded-sm"
+						className="p-2 absolute dark:invert text-black left-4 top-4 cursor-pointer hover:bg-black/5 border border-black/20 rounded-sm"
 					>
 						<TbLayoutSidebarLeftCollapse size={20} />
 					</button>

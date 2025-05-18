@@ -35,7 +35,7 @@ function Hightlighter() {
 		<div
 			id="highlight"
 			ref={(event) => updateWidth(event)}
-			className="h-10 bg-white/10 pointer-events-none absolute left-0"
+			className="h-10 bg-black/10 pointer-events-none absolute left-0"
 		/>
 	);
 }
@@ -70,14 +70,14 @@ const RenderFolder = memo((props: RenderFolderType) => {
 
 	return (
 		<div
-			className={`flex flex-col overflow-hidden w-full relative ${isInnerFolderView ? '-left-0 border-l border-white/10' : ''}`}
+			className={`flex flex-col overflow-hidden  dark:invert w-full relative ${isInnerFolderView ? '-left-0 border-l border-black/10' : ''}`}
 		>
 			{files.map((file) => {
 				if (file.type === 'folder') {
 					// render folders
 					return (
 						<details
-							className={`relative [open]:bg-white/10 border-t border-b border-transparent hover:border-white/10 pl-3 ${selectedFileId === file.id ? ' border-white/5' : ''} `}
+							className={`relative text-black [open]:bg-black/10 border-t border-b border-transparent hover:border-black/10 pl-3 ${selectedFileId === file.id ? ' border-black/5' : ''} `}
 							key={file.id}
 							onClick={(event) => {
 								event.stopPropagation();
@@ -118,7 +118,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 				return (
 					<>
 						<span
-							className={`relative flex gap-1 items-center text-base w-full cursor-pointer border-t border-b border-transparent hover:border-white/10 p-2 pl-5`}
+							className={`relative  flex gap-1 items-center text-black text-base w-full cursor-pointer border-t border-b border-transparent hover:border-black/10 p-2 pl-5`}
 							key={file.id}
 							onClick={(event) => {
 								event.stopPropagation();
@@ -230,7 +230,7 @@ export default function FileView() {
 					.map((val) => (
 						<div
 							key={val}
-							className="h-10 bg-white/10 animate-pulse w-11/12 rounded-md"
+							className="h-10 dark:invert bg-black/10 animate-pulse w-11/12 rounded-md"
 							style={{ filter: `brightness(${val / 10})` }}
 						/>
 					))}
@@ -261,14 +261,14 @@ export default function FileView() {
 			<div className="flex flex-col gap-3 px-4 my-4">
 				<button
 					onClick={openFileCreate}
-					className="px-4 py-2 flex items-center gap-2  cursor-pointer hover:bg-white/10 border border-white/20 rounded-sm"
+					className="px-4 py-2 flex items-center gap-2  cursor-pointer text-black dark:invert hover:bg-black/10 border border-black/20 rounded-sm"
 				>
 					<VscNewFile />
 					New File
 				</button>
 				<button
 					onClick={openFolderCreate}
-					className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/10 border border-white/20 rounded-sm"
+					className="px-4 py-2 flex items-center gap-2 cursor-pointer text-black dark:invert hover:bg-black/10 border border-black/20 rounded-sm"
 				>
 					<VscNewFolder />
 					New Folder
@@ -290,7 +290,7 @@ export default function FileView() {
 							top: `${highlightPosition?.top - scrollTop}px`,
 							height: `${42}px`,
 						}}
-						className="w-full bg-white/10 pointer-events-none absolute left-0"
+						className="w-full bg-black/10 pointer-events-none absolute left-0"
 					/>
 				)} */}
 			</Suspense>

@@ -187,7 +187,7 @@ export default function EditorView() {
 				{!isReaderMode && (
 					<div
 						ref={cursorRef}
-						className={`${isTyping ? '' : 'animate-cursor'} pointer-events-none min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] bg-white mb-0 overflow-hidden tracking-tighter white`}
+						className={`${isTyping ? '' : 'animate-cursor'} pointer-events-none  min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] dark:bg-white bg-black mb-0 overflow-hidden tracking-tighter white`}
 					/>
 				)}
 			</main>

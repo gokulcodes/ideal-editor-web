@@ -106,9 +106,9 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 	return (
 		<div
 			ref={folderCreateRef}
-			className={`flex mt-2 items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
+			className={`flex mt-2 text-black items-center gap-2 ${!isInnerFolderView ? 'pl-5' : ''}  `}
 		>
-			<span>
+			<span className="text-black">
 				<CiFolderOn />
 			</span>
 			<input
@@ -116,7 +116,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				ref={folderInputRef}
 				type="text"
 				onBlur={(event) => handleFolderCreation(event.target.value)}
-				className="border bg-black/20 outline-none w-full focus-within:border-blue-400 border-white/5"
+				className="border  bg-black/20 outline-none w-full focus-within:border-blue-400 border-black/5"
 			/>
 		</div>
 	);

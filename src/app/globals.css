@@ -81,13 +81,6 @@ body {
 	font-family: 'Host Grotesk', sans-serif;
 }
 
-.selectedText {
-	background-color: rgba(255, 255, 255, 0.2);
-	padding-bottom: 3px;
-	border-radius: 4px;
-	color: white;
-}
-
 #sidebar * {
 	transition: all 0.3s ease-in-out;
 }
@@ -111,20 +104,50 @@ summary::marker {
 	content: none;
 }
 
-summary::before {
-	/* content: url('/folder-closed.png'); */
-	content: '';
-	position: absolute;
-	top: 0px;
-	left: 20px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 15px;
-	height: 15px;
-	filter: invert();
-	background-image: url('/folder-closed.png');
-	background-size: contain;
-	background-repeat: no-repeat;
+@media (prefers-color-scheme: dark) {
+	summary::before {
+		/* content: url('/folder-closed.png'); */
+		content: '';
+		position: absolute;
+		top: 0px;
+		left: 20px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 15px;
+		height: 15px;
+		background-image: url('/folder-closed.png');
+		background-size: contain;
+		background-repeat: no-repeat;
+	}
+	.selectedText {
+		background-color: rgba(255, 255, 255, 0.2);
+		padding-bottom: 3px;
+		border-radius: 4px;
+		color: white;
+	}
+}
+
+@media (prefers-color-scheme: light) {
+	summary::before {
+		/* content: url('/folder-closed.png'); */
+		content: '';
+		position: absolute;
+		top: 0px;
+		left: 20px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 15px;
+		height: 15px;
+		background-image: url('/folder-closed.png');
+		background-size: contain;
+		background-repeat: no-repeat;
+	}
+	.selectedText {
+		background-color: rgba(0, 0, 0, 0.2);
+		padding-bottom: 3px;
+		border-radius: 4px;
+		color: black;
+	}
 }
 
 details[open] {

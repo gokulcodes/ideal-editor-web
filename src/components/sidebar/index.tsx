@@ -21,7 +21,7 @@ function Sidebar() {
 			<div
 				ref={sideBarRef}
 				id="sidebar"
-				className={`bg-[#101010] w-72 absolute z-50 h-[100vh] flex flex-col border-r border-white/20`}
+				className={`bg-[#f0f0f0] dark:bg-[#101010] w-72 absolute z-50 h-[100vh] flex flex-col border-r border-black/20 dark:border-white/20`}
 			>
 				<LogoView />
 				<FileView />
