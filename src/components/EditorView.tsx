@@ -117,11 +117,18 @@ export default function EditorView() {
 
 		if (prevContentInfo) {
 			const id = prevContentInfo?.id;
-			prevContentInfo.content = content;
-			localStorage.setItem(id, JSON.stringify(prevContentInfo));
+			const file = localStorage.getItem(id);
+			if (file) {
+				const curr: File = JSON.parse(file);
+				const name = curr.name;
+				prevContentInfo.name = name;
+				prevContentInfo.content = content;
+				localStorage.setItem(id, JSON.stringify(prevContentInfo));
+			}
 		}
 
 		const fileInfo = localStorage.getItem(selectedFileId);
+		console.log(fileInfo);
 		if (!fileInfo) return;
 
 		const parsedFileInfo: File = JSON.parse(fileInfo);

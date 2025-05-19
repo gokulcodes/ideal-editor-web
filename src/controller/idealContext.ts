@@ -10,6 +10,7 @@ export const initialState = {
 	files: null,
 	isFocusMode: false,
 	isReaderMode: false,
+	fileRename: false,
 };
 
 type idealContextType = {
@@ -21,6 +22,7 @@ type idealContextType = {
 	files: Array<File | Folder> | null;
 	isFocusMode: boolean;
 	isReaderMode: boolean;
+	fileRename: boolean;
 };
 
 export type ActionType = {
@@ -66,6 +68,11 @@ export const reducer = (
 			return {
 				...state,
 				isReaderMode: action.payload.isReaderMode,
+			};
+		case 'toggleFileRename':
+			return {
+				...state,
+				fileRename: action.payload.fileRename,
 			};
 
 		default:

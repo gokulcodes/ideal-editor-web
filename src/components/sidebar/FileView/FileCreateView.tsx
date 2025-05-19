@@ -73,6 +73,88 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 		[dispatch]
 	);
 
+	const handleFileRename = useCallback(
+		(value: string) => {
+			if (!value || !fileInputRef.current) {
+				dispatch({
+					type: 'toggleFileRename',
+					payload: { ...state, fileRename: false },
+				});
+				return;
+			}
+			// const id = uuid();
+			// const newfile: File = {
+			// 	id: id,
+			// 	type: 'file',
+			// 	name: value,
+			// 	content: '',
+			// };
+
+			// localStorage.setItem(id, JSON.stringify(newfile));
+
+			let files = localStorage.getItem('files');
+			if (!files) {
+				files = '[]';
+			}
+			let parsedFiles: Array<File | Folder> = JSON.parse(files);
+			if (!parsedFiles) parsedFiles = [];
+			// let fileInserted = false;
+
+			function fileSearch(totalFiles: Array<File | Folder>) {
+				for (const files of totalFiles) {
+					// if (files.type === 'file') {
+					// 	continue;
+					// }
+					if (files.id === state.selectedFileId) {
+						const fileInfo = localStorage.getItem(
+							state.selectedFileId
+						);
+						if (fileInfo) {
+							const parsedFileInfo: File = JSON.parse(fileInfo);
+							if (parsedFileInfo) parsedFileInfo.name = value;
+							console.log(parsedFileInfo);
+							localStorage.setItem(
+								state.selectedFileId,
+								JSON.stringify(parsedFileInfo)
+							);
+						}
+						files.name = value;
+					}
+
+					if (
+						files.type === 'folder' &&
+						files.id !== state.selectedFileId
+					) {
+						if (files.childFiles.length) {
+							fileSearch(files.childFiles);
+						}
+					}
+
+					// folder with same id found
+					// files.childFiles = [...files.childFiles, newfile];
+					// fileInserted = true;
+				}
+			}
+
+			fileSearch(parsedFiles);
+			// if (!fileInserted) {
+			// 	parsedFiles.push(newfile);
+			// }
+
+			dispatch({
+				type: 'fileUpdate',
+				payload: { ...state, files: parsedFiles },
+			});
+			localStorage.setItem('files', JSON.stringify(parsedFiles));
+			fileInputRef.current.value = '';
+			dispatch({
+				type: 'toggleFileRename',
+				payload: { ...state, fileRename: false },
+			});
+		},
+		[dispatch]
+	);
+
 	useEffect(() => {
 		if (!fileCreateRef.current) {
 			return;
@@ -109,7 +191,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 				<img
 					src="/icons/add-file.png"
 					alt="file-mode"
-					className="w-4 dark:invert h-4"
+					className="w-4 h-4"
 				/>
 				{/* <CiFileOn /> */}
 			</span>
@@ -117,7 +199,11 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 				autoFocus
 				ref={fileInputRef}
 				type="text"
-				onBlur={(event) => handleFileCreation(event.target.value)}
+				onBlur={(event) =>
+					state.fileRename
+						? handleFileRename(event.target.value)
+						: handleFileCreation(event.target.value)
+				}
 				className="border bg-black/20 outline-none w-full focus-within:border-blue-400 border-white/5"
 			/>
 		</div>

@@ -1,5 +1,6 @@
 import idealContext from '@/controller/idealContext';
 import {
+	Fragment,
 	memo,
 	Suspense,
 	useCallback,
@@ -127,14 +128,22 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								updateSelectedFile(file.id);
 							}}
 						>
-							<img
-								src="/icons/file.png"
-								alt="file-mode"
-								className="w-4 h-4"
-							/>
-							<span className="pl-2 pointer-events-none">
-								{file.name}
-							</span>
+							{state.fileRename && file.id === selectedFileId ? (
+								<FileCreateView
+									isInnerFolderView={isInnerFolderView}
+								/>
+							) : (
+								<Fragment>
+									<img
+										src="/icons/file.png"
+										alt="file-mode"
+										className="w-4 h-4"
+									/>
+									<span className="pl-2 pointer-events-none">
+										{file.name}
+									</span>
+								</Fragment>
+							)}
 							{file.id === selectedFileId && <Hightlighter />}
 						</span>
 						{FileOrFolderCreateView(file.id)}
@@ -194,9 +203,22 @@ export default function FileView() {
 		[dispatch, state]
 	);
 
+	function handleFileRename() {
+		// console.log('file renames');
+		// setFileRename(!fileRename);
+		dispatch({
+			type: 'toggleFileRename',
+			payload: { ...state, fileRename: !state.fileRename },
+		});
+	}
+
 	useEffect(() => {
 		function handleFileDelete(event: KeyboardEvent) {
 			event.stopPropagation();
+			if (event.key == 'F2') {
+				handleFileRename();
+				return;
+			}
 			if (event.key !== 'Backspace') {
 				return;
 			}
