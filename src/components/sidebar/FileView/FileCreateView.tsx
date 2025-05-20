@@ -161,7 +161,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 		}
 
 		function handleKey(event: KeyboardEvent) {
-			if (!fileInputRef.current) {
+			if (!fileInputRef.current || state.fileRename) {
 				return;
 			}
 			if (event.key === 'Enter') {
@@ -180,7 +180,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 			if (!fileCreateElement) return;
 			fileCreateElement.removeEventListener('keyup', handleKey);
 		};
-	}, [handleFileCreation]);
+	}, [handleFileCreation, state.fileRename]);
 
 	return (
 		<div

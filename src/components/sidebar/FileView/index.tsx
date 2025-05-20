@@ -66,7 +66,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 	if (!files || !Array.isArray(files)) {
 		return null;
 	}
-
+	console.log(state.folderRename);
 	return (
 		<div
 			className={`flex flex-col overflow-hidden w-full relative ${isInnerFolderView ? '-left-0 border-l border-black/10' : ''}`}
@@ -97,9 +97,16 @@ const RenderFolder = memo((props: RenderFolderType) => {
 							}}
 						>
 							<summary className="p-2">
-								<span className="relative left-8">
-									{file.name}
-								</span>
+								{state.folderRename &&
+								file.id === state.selectedFileId ? (
+									<FolderCreateView
+										isInnerFolderView={isInnerFolderView}
+									/>
+								) : (
+									<span className="relative left-8">
+										{file.name}
+									</span>
+								)}
 							</summary>
 							{/* {file.id === selectedFileId && <Hightlighter />} */}
 							<div className="relative pl-4">
@@ -203,6 +210,14 @@ export default function FileView() {
 		[dispatch, state]
 	);
 
+	function handleFolderRename() {
+		// console.log('file renames');
+		// setFileRename(!fileRename);
+		dispatch({
+			type: 'toggleFolderRename',
+			payload: { ...state, folderRename: !state.folderRename },
+		});
+	}
 	function handleFileRename() {
 		// console.log('file renames');
 		// setFileRename(!fileRename);
@@ -212,11 +227,26 @@ export default function FileView() {
 		});
 	}
 
+	function handleRename() {
+		const fileInfo = localStorage.getItem(state.selectedFileId);
+		console.log(fileInfo);
+		if (!fileInfo) {
+			return;
+		}
+		const parsedFileInfo: File | Folder = JSON.parse(fileInfo);
+		if (parsedFileInfo.type == 'file') {
+			handleFileRename();
+			return;
+		}
+		handleFolderRename();
+	}
+
 	useEffect(() => {
 		function handleFileDelete(event: KeyboardEvent) {
 			event.stopPropagation();
 			if (event.key == 'F2') {
-				handleFileRename();
+				// handleFileRename();
+				handleRename();
 				return;
 			}
 			if (event.key !== 'Backspace') {
@@ -309,7 +339,7 @@ export default function FileView() {
 			<p className="uppercase tracking-widest mx-5 my-3 opacity-80 text-xs">
 				Files & Folders
 			</p>
-			<div className="w-full h-full dark:invert">
+			<div className="w-full dark:invert">
 				<Suspense fallback={<p>Loading...</p>}>
 					<RenderFolder
 						selectedFileId={state.selectedFileId}
@@ -327,13 +357,13 @@ export default function FileView() {
 					/>
 				)} */}
 				</Suspense>
+				{state.newFileCreate && !state.selectedFileId && (
+					<FileCreateView isInnerFolderView={false} />
+				)}
+				{state.newFolderCreate && !state.selectedFileId && (
+					<FolderCreateView isInnerFolderView={false} />
+				)}
 			</div>
-			{state.newFileCreate && !state.selectedFileId && (
-				<FileCreateView isInnerFolderView={false} />
-			)}
-			{state.newFolderCreate && !state.selectedFileId && (
-				<FolderCreateView isInnerFolderView={false} />
-			)}
 		</div>
 	);
 }

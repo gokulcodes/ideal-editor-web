@@ -17,9 +17,9 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				});
 				return;
 			}
-
+			const id = uuid();
 			const newFolder: Folder = {
-				id: uuid(),
+				id: id,
 				type: 'folder',
 				name: value,
 				childFiles: [],
@@ -65,11 +65,94 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				payload: { ...state, files: parsedFiles },
 			});
 
+			localStorage.setItem(id, JSON.stringify(newFolder));
 			localStorage.setItem('files', JSON.stringify(parsedFiles));
 			folderInputRef.current.value = '';
 			dispatch({
 				type: 'newFolderCreate',
 				payload: { ...state, newFolderCreate: false },
+			});
+		},
+		[dispatch]
+	);
+
+	const handleFolderRename = useCallback(
+		(value: string) => {
+			if (!value || !folderInputRef.current) {
+				dispatch({
+					type: 'toggleFolderRename',
+					payload: { ...state, folderRename: false },
+				});
+				return;
+			}
+			// const id = uuid();
+			// const newfile: File = {
+			// 	id: id,
+			// 	type: 'file',
+			// 	name: value,
+			// 	content: '',
+			// };
+
+			// localStorage.setItem(id, JSON.stringify(newfile));
+
+			let files = localStorage.getItem('files');
+			if (!files) {
+				files = '[]';
+			}
+			let parsedFiles: Array<File | Folder> = JSON.parse(files);
+			if (!parsedFiles) parsedFiles = [];
+			// let fileInserted = false;
+
+			function fileSearch(totalFiles: Array<File | Folder>) {
+				for (const files of totalFiles) {
+					// if (files.type === 'file') {
+					// 	continue;
+					// }
+					if (files.id === state.selectedFileId) {
+						const fileInfo = localStorage.getItem(
+							state.selectedFileId
+						);
+						if (fileInfo) {
+							const parsedFileInfo: File = JSON.parse(fileInfo);
+							if (parsedFileInfo) parsedFileInfo.name = value;
+							console.log(parsedFileInfo);
+							localStorage.setItem(
+								state.selectedFileId,
+								JSON.stringify(parsedFileInfo)
+							);
+						}
+						files.name = value;
+					}
+
+					if (
+						files.type === 'folder' &&
+						files.id !== state.selectedFileId
+					) {
+						if (files.childFiles.length) {
+							fileSearch(files.childFiles);
+						}
+					}
+
+					// folder with same id found
+					// files.childFiles = [...files.childFiles, newfile];
+					// fileInserted = true;
+				}
+			}
+
+			fileSearch(parsedFiles);
+			// if (!fileInserted) {
+			// 	parsedFiles.push(newfile);
+			// }
+
+			dispatch({
+				type: 'fileUpdate',
+				payload: { ...state, files: parsedFiles },
+			});
+			localStorage.setItem('files', JSON.stringify(parsedFiles));
+			folderInputRef.current.value = '';
+			dispatch({
+				type: 'toggleFolderRename',
+				payload: { ...state, folderRename: false },
 			});
 		},
 		[dispatch]
@@ -81,7 +164,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 		}
 
 		function handleKey(event: KeyboardEvent) {
-			if (!folderInputRef.current) {
+			if (!folderInputRef.current || state.fileRename) {
 				return;
 			}
 			if (event.key === 'Enter') {
@@ -100,7 +183,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 			if (!fileCreateElement) return;
 			fileCreateElement.removeEventListener('keyup', handleKey);
 		};
-	}, [handleFolderCreation]);
+	}, [handleFolderCreation, state.fileRename]);
 
 	return (
 		<div
@@ -111,14 +194,18 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				<img
 					src="/icons/add-folder.png"
 					alt="file-mode"
-					className="w-4 dark:invert h-4"
+					className="w-4 h-4"
 				/>
 			</span>
 			<input
 				autoFocus
 				ref={folderInputRef}
 				type="text"
-				onBlur={(event) => handleFolderCreation(event.target.value)}
+				onBlur={(event) =>
+					state.folderRename
+						? handleFolderRename(event.target.value)
+						: handleFolderCreation(event.target.value)
+				}
 				className="border  bg-black/20 outline-none w-full focus-within:border-blue-400 border-black/5"
 			/>
 		</div>

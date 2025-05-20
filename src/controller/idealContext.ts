@@ -11,6 +11,7 @@ export const initialState = {
 	isFocusMode: false,
 	isReaderMode: false,
 	fileRename: false,
+	folderRename: false,
 };
 
 type idealContextType = {
@@ -23,6 +24,7 @@ type idealContextType = {
 	isFocusMode: boolean;
 	isReaderMode: boolean;
 	fileRename: boolean;
+	folderRename: boolean;
 };
 
 export type ActionType = {
@@ -73,6 +75,11 @@ export const reducer = (
 			return {
 				...state,
 				fileRename: action.payload.fileRename,
+			};
+		case 'toggleFolderRename':
+			return {
+				...state,
+				folderRename: action.payload.folderRename,
 			};
 
 		default:
