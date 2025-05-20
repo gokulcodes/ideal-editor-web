@@ -13,8 +13,8 @@ export default function Canvas() {
 
 	return (
 		<main className="flex flex-col items-center justify-center w-full">
-			<Header />
 			<EditorContext.Provider value={{ state, dispatch }}>
+				<Header />
 				<EditorView />
 				<EditorStats />
 			</EditorContext.Provider>

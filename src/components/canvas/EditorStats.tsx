@@ -61,24 +61,44 @@ function NumberAnimate(props: { counter: number }) {
 }
 
 export default function EditorStats() {
-	const { state } = useContext(editorContext);
 	const {
-		state: { selectedFileId, isReaderMode },
-	} = useContext(idealContext);
+		state: { editor },
+	} = useContext(editorContext);
+	const { state, dispatch } = useContext(idealContext);
 
-	if (!selectedFileId || isReaderMode) {
+	if (!state.selectedFileId || state.isReaderMode) {
 		return null;
 	}
+	function handleExitFocusMode() {
+		dispatch({
+			type: 'toggleFocusMode',
+			payload: { ...state, isFocusMode: false },
+		});
+	}
 	return (
-		<div className="fixed right-4 bottom-2 flex flex-row items-center gap-2">
+		<div className="fixed right-4 bottom-2 flex flex-row items-center gap-4">
+			{state.isFocusMode ? (
+				<button
+					style={{ width: 'fit-content' }}
+					onClick={handleExitFocusMode}
+					className="border dark:invert rounded-full border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 px-4 py-1 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				>
+					<img
+						src="/icons/focus-mode.png"
+						alt="reader-mode"
+						className="w-4 h-4"
+					/>
+					Exit Focus Mode
+				</button>
+			) : null}
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Lines </p>
-				<NumberAnimate counter={state.editor.totalLineCount} />
+				<NumberAnimate counter={editor.totalLineCount} />
 			</div>
 			<span className="opacity-40">|</span>
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Characters</p>
-				<NumberAnimate counter={state.editor.totalLetterCount} />
+				<NumberAnimate counter={editor.totalLetterCount} />
 			</div>
 		</div>
 	);

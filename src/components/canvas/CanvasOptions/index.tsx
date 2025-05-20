@@ -16,6 +16,14 @@ export default function CanvasOptions() {
 			type: 'toggleReaderMode',
 			payload: { ...state, isReaderMode: !state.isReaderMode },
 		});
+		dispatch({
+			type: 'sidebarAnimate',
+			payload: { ...state, isSidebarAnimate: false },
+		});
+		dispatch({
+			type: 'toggleSidebar',
+			payload: { ...state, isSidebarOpen: false },
+		});
 	}
 
 	return (
@@ -23,7 +31,7 @@ export default function CanvasOptions() {
 			<button
 				onClick={handleReaderMode}
 				style={{ width: 'fit-content' }}
-				className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-white/30' : ''} hover:bg-white/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
+				className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-black/30' : ''} hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
 			>
 				<img
 					src="/icons/reader-mode.png"
