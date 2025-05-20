@@ -1,10 +1,12 @@
 import { ActionType, EditorStateType } from '@/controller/editorContext';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
 	isCursorMoveEvent,
 	isIgnorableKeys,
 	isKeyboardShortcut,
 } from './hooksUtils';
+import idealContext from '@/controller/idealContext';
+import { File } from '@/types/types';
 
 export default function useKeyboardControls(
 	state: EditorStateType,
@@ -13,6 +15,9 @@ export default function useKeyboardControls(
 	editorRef: HTMLDivElement | null
 ) {
 	const editor = state.editor;
+	const {
+		state: { selectedFileId },
+	} = useContext(idealContext);
 	const cursor = editor.cursor;
 	const timerId = useRef<ReturnType<typeof setTimeout>>(null);
 	const [isTyping, setIsTyping] = useState(true);
@@ -25,6 +30,17 @@ export default function useKeyboardControls(
 
 				if (hasMetaOrCtrl) {
 					switch (key) {
+						case 's':
+							const content = editor.getAllContent;
+							const id = selectedFileId;
+							const file = localStorage.getItem(id);
+							if (file) {
+								const curr: File = JSON.parse(file);
+								curr.content = content;
+								localStorage.setItem(id, JSON.stringify(curr));
+								console.log(curr);
+							}
+							break;
 						case 'c':
 							editor.copySelection();
 							break;

@@ -10,7 +10,7 @@ export function isIgnorableKeys(event: KeyboardEvent) {
 
 export function isKeyboardShortcut(event: KeyboardEvent) {
 	const keyVal = event.key.toLowerCase();
-	const ctrlMetaKeys = new Set(['c', 'v', 'x', 'a', 'z', 'backspace']);
+	const ctrlMetaKeys = new Set(['c', 'v', 'x', 'a', 'z', 's', 'backspace']);
 	if (event.metaKey || event.ctrlKey) {
 		return ctrlMetaKeys.has(keyVal) || isCursorMoveEvent(event);
 	}
