@@ -11,6 +11,7 @@ import {
 import { File, Folder } from '@/types/types';
 import FolderCreateView from './FolderCreateView';
 import FileCreateView from './FileCreateView';
+import Modal from '@/components/modal';
 
 type RenderFolderType = {
 	updateSelectedFile: (id: string) => void;
@@ -66,7 +67,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 	if (!files || !Array.isArray(files)) {
 		return null;
 	}
-	console.log(state.folderRename);
+
 	return (
 		<div
 			className={`flex flex-col overflow-hidden w-full relative ${isInnerFolderView ? '-left-0 border-l border-black/10' : ''}`}
@@ -241,6 +242,25 @@ export default function FileView() {
 		handleFolderRename();
 	}
 
+	function handleDelete() {
+		const files = localStorage.getItem('files');
+		if (files) {
+			let parsedFiles: Array<File | Folder> = JSON.parse(files);
+			parsedFiles = parsedFiles.filter(
+				(file: File | Folder) => file.id !== state.selectedFileId
+			);
+			dispatch({
+				type: 'fileUpdate',
+				payload: { ...state, files: parsedFiles },
+			});
+			localStorage.setItem('files', JSON.stringify(parsedFiles));
+			localStorage.removeItem(state.selectedFileId);
+			if (parsedFiles.length) updateSelectedFile(parsedFiles[0].id);
+			else updateSelectedFile('');
+			handlePopup();
+		}
+	}
+
 	useEffect(() => {
 		function handleFileDelete(event: KeyboardEvent) {
 			event.stopPropagation();
@@ -252,27 +272,13 @@ export default function FileView() {
 			if (event.key !== 'Backspace') {
 				return;
 			}
-			const files = localStorage.getItem('files');
-			if (files) {
-				let parsedFiles: Array<File | Folder> = JSON.parse(files);
-				parsedFiles = parsedFiles.filter(
-					(file: File | Folder) => file.id !== state.selectedFileId
-				);
-				dispatch({
-					type: 'fileUpdate',
-					payload: { ...state, files: parsedFiles },
-				});
-				localStorage.setItem('files', JSON.stringify(parsedFiles));
-				localStorage.removeItem(state.selectedFileId);
-				if (parsedFiles.length) updateSelectedFile(parsedFiles[0].id);
-				else updateSelectedFile('');
-			}
+			handlePopup();
 		}
 		document.addEventListener('keyup', handleFileDelete);
 		return () => {
 			document.removeEventListener('keyup', handleFileDelete);
 		};
-	}, [dispatch, state, updateSelectedFile]);
+	}, [dispatch, state, handlePopup, handleRename, updateSelectedFile]);
 
 	if (!Array.isArray(state.files)) {
 		return (
@@ -303,6 +309,13 @@ export default function FileView() {
 		dispatch({
 			type: 'newFolderCreate',
 			payload: { ...state, newFolderCreate: true },
+		});
+	}
+
+	function handlePopup() {
+		dispatch({
+			type: 'togglePopup',
+			payload: { ...state, isPopupOpen: !state.isPopupOpen },
 		});
 	}
 
@@ -364,6 +377,12 @@ export default function FileView() {
 					<FolderCreateView isInnerFolderView={false} />
 				)}
 			</div>
+			{state.isPopupOpen ? (
+				<Modal
+					onCancel={handlePopup}
+					onConfirm={handleDelete}
+				/>
+			) : null}
 		</div>
 	);
 }

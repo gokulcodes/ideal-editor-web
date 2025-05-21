@@ -2,6 +2,7 @@
 import editorContext from '@/controller/editorContext';
 import idealContext from '@/controller/idealContext';
 import { useContext, memo, useEffect, useRef } from 'react';
+import DocumentSaver from './DocumentSaver';
 
 const NumberScroller = memo((props: { selectedNum: string }) => {
 	const ref = useRef<HTMLDivElement>(null);
@@ -91,6 +92,7 @@ export default function EditorStats() {
 					Exit Focus Mode
 				</button>
 			) : null}
+			<DocumentSaver />
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Lines </p>
 				<NumberAnimate counter={editor.totalLineCount} />

@@ -18,6 +18,20 @@
 	/* --animate-sidebarOpen: sidebarOpen 0.2s ease-in; */
 	--animate-sidebarOpen: sidebarOpen 0.4s ease-in-out;
 	--animate-sidebarClose: sidebarClose 0.4s ease-in-out;
+	--animate-open: open 0.4s ease-in-out;
+	@keyframes open {
+		0% {
+			opacity: 0;
+			transform: translateY(-40px);
+			transform-origin: center;
+		}
+		100% {
+			/* height: 10px; */
+			opacity: 1;
+			transform: translateY(0px);
+			transform-origin: center;
+		}
+	}
 	@keyframes cursorBlink {
 		0% {
 			opacity: 1;

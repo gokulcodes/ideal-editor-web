@@ -9,15 +9,13 @@ import idealContext from '@/controller/idealContext';
 import { File } from '@/types/types';
 
 export default function useKeyboardControls(
-	state: EditorStateType,
+	editorState: EditorStateType,
 	isReaderMode: boolean,
-	dispatch: React.Dispatch<ActionType>,
+	editorDispatch: React.Dispatch<ActionType>,
 	editorRef: HTMLDivElement | null
 ) {
-	const editor = state.editor;
-	const {
-		state: { selectedFileId },
-	} = useContext(idealContext);
+	const editor = editorState.editor;
+	const { state, dispatch } = useContext(idealContext);
 	const cursor = editor.cursor;
 	const timerId = useRef<ReturnType<typeof setTimeout>>(null);
 	const [isTyping, setIsTyping] = useState(true);
@@ -32,13 +30,27 @@ export default function useKeyboardControls(
 					switch (key) {
 						case 's':
 							const content = editor.getAllContent;
-							const id = selectedFileId;
+							const id = state.selectedFileId;
 							const file = localStorage.getItem(id);
 							if (file) {
 								const curr: File = JSON.parse(file);
 								curr.content = content;
 								localStorage.setItem(id, JSON.stringify(curr));
-								console.log(curr);
+								dispatch({
+									type: 'toggleSaved',
+									payload: { ...state, isSaved: true },
+								});
+								setTimeout(
+									() =>
+										dispatch({
+											type: 'toggleSaved',
+											payload: {
+												...state,
+												isSaved: false,
+											},
+										}),
+									5000
+								);
 							}
 							break;
 						case 'c':
@@ -107,7 +119,7 @@ export default function useKeyboardControls(
 				resolve('Success');
 			});
 		},
-		[editor]
+		[editor, state, dispatch]
 	);
 
 	function handleTypingState() {
@@ -136,14 +148,14 @@ export default function useKeyboardControls(
 				console.time('Keyboard Operations');
 				await handleKeyboardShortcuts(event); // it can take some time to do the operation. so await the function
 				console.timeEnd('Keyboard Operations');
-				dispatch({ type: 'type', payload: editor });
+				editorDispatch({ type: 'type', payload: editor });
 				return;
 			}
 
 			if (isCursorMoveEvent(event)) {
 				editor.resetSelection();
 				editor.moveCursor(event);
-				dispatch({ type: 'type', payload: editor });
+				editorDispatch({ type: 'type', payload: editor });
 				return;
 			}
 
@@ -187,9 +199,9 @@ export default function useKeyboardControls(
 					break;
 			}
 
-			dispatch({ type: 'type', payload: editor });
+			editorDispatch({ type: 'type', payload: editor });
 		},
-		[dispatch, handleKeyboardShortcuts, isReaderMode, cursor, editor]
+		[editorDispatch, handleKeyboardShortcuts, isReaderMode, cursor, editor]
 	);
 
 	useEffect(() => {

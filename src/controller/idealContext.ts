@@ -12,6 +12,8 @@ export const initialState = {
 	isReaderMode: false,
 	fileRename: false,
 	folderRename: false,
+	isSaved: false,
+	isPopupOpen: false,
 };
 
 type idealContextType = {
@@ -25,6 +27,8 @@ type idealContextType = {
 	isReaderMode: boolean;
 	fileRename: boolean;
 	folderRename: boolean;
+	isSaved: boolean;
+	isPopupOpen: boolean;
 };
 
 export type ActionType = {
@@ -80,6 +84,16 @@ export const reducer = (
 			return {
 				...state,
 				folderRename: action.payload.folderRename,
+			};
+		case 'toggleSaved':
+			return {
+				...state,
+				isSaved: action.payload.isSaved,
+			};
+		case 'togglePopup':
+			return {
+				...state,
+				isPopupOpen: action.payload.isPopupOpen,
 			};
 
 		default:

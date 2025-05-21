@@ -1,0 +1,27 @@
+{
+	"theme_color": "#121212",
+	"background_color": "#292929",
+	"icons": [
+		{
+			"purpose": "maskable",
+			"sizes": "512x512",
+			"src": "icon512_maskable.png",
+			"type": "image/png"
+		},
+		{
+			"purpose": "any",
+			"sizes": "512x512",
+			"src": "icon512_rounded.png",
+			"type": "image/png"
+		}
+	],
+	"orientation": "any",
+	"display": "standalone",
+	"dir": "auto",
+	"lang": "en-US",
+	"name": "Ideal Editor",
+	"short_name": "Ideal",
+	"start_url": "/",
+	"scope": "/",
+	"description": "A minimal, fast, and distraction-free text editor built for the web. Perfect for taking quick notes, writing drafts, or capturing ideas on the go — all with seamless cloud storage."
+}
