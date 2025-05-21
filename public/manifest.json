@@ -1,6 +1,6 @@
 {
 	"theme_color": "#121212",
-	"background_color": "#292929",
+	"background_color": "red",
 	"icons": [
 		{
 			"purpose": "maskable",
