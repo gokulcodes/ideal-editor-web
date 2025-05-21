@@ -72,6 +72,13 @@
 			/* transform: translateX(0px); */
 			transform-origin: left;
 		}
+		50% {
+			/* height: 10px; */
+			opacity: 0;
+			/* width: 12.5%; */
+			/* transform: translateX(-1000px); */
+			transform-origin: left;
+		}
 		100% {
 			/* height: 10px; */
 			opacity: 0;

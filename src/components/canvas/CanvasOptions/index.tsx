@@ -4,6 +4,7 @@ import { useContext } from 'react';
 export default function CanvasOptions() {
 	const { state, dispatch } = useContext(idealContext);
 	const isReaderMode = state.isReaderMode;
+	const selectedFileId = state.selectedFileId;
 	function handleFocusMode() {
 		dispatch({
 			type: 'toggleFocusMode',
@@ -28,31 +29,35 @@ export default function CanvasOptions() {
 
 	return (
 		<div className="flex flex-row gap-2">
-			<button
-				onClick={handleReaderMode}
-				style={{ width: 'fit-content' }}
-				className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-black/30' : ''} hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
-			>
-				<img
-					src="/icons/reader-mode.png"
-					alt="reader-mode"
-					className="w-4 h-4"
-				/>
-				{/* <MdOutlineChromeReaderMode /> */}
-				Reader Mode
-			</button>
-			<button
-				style={{ width: 'fit-content' }}
-				onClick={handleFocusMode}
-				className="border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
-			>
-				<img
-					src="/icons/focus-mode.png"
-					alt="reader-mode"
-					className="w-4 h-4"
-				/>
-				Focus Mode
-			</button>
+			{selectedFileId ? (
+				<button
+					onClick={handleReaderMode}
+					style={{ width: 'fit-content' }}
+					className={`border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer ${isReaderMode ? 'bg-black/30' : ''} hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left`}
+				>
+					<img
+						src="/icons/reader-mode.png"
+						alt="reader-mode"
+						className="w-4 h-4"
+					/>
+					{/* <MdOutlineChromeReaderMode /> */}
+					Reader Mode
+				</button>
+			) : null}
+			{selectedFileId ? (
+				<button
+					style={{ width: 'fit-content' }}
+					onClick={handleFocusMode}
+					className="border dark:invert border-black/20 text-black/80 hover:text-black cursor-pointer hover:bg-black/20 rounded-md px-4 py-2 flex flex-row  items-center gap-2 justify-start text-sm w-full text-left"
+				>
+					<img
+						src="/icons/focus-mode.png"
+						alt="reader-mode"
+						className="w-4 h-4"
+					/>
+					Focus Mode
+				</button>
+			) : null}
 			<a
 				href="https://github.com/gokulcodes/ideal-editor-web"
 				target="_blank"

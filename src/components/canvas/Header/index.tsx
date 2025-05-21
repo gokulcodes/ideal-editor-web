@@ -31,7 +31,7 @@ function Header() {
 						<img
 							src="/icons/sidebar.png"
 							alt="file-mode"
-							className="w-4 h-4"
+							className="w-5 h-5"
 						/>
 					</button>
 				) : null}
@@ -41,7 +41,7 @@ function Header() {
 					className="w-10 h-10"
 				/>
 			</div>
-			{state.selectedFileId ? <CanvasOptions /> : null}
+			<CanvasOptions />
 		</header>
 	);
 }

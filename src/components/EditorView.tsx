@@ -148,14 +148,14 @@ export default function EditorView() {
 
 	if (!currentContent) {
 		return (
-			<div className="w-full h-[100vh] flex flex-col items-center justify-center gap-10">
+			<div className="w-full h-[100vh] flex flex-col items-center justify-center gap-5">
 				<img
 					src="/outline.png"
 					alt="outlogo"
-					className="opacity-20 transform scale-110"
+					className="opacity-15 transform scale-100"
 				/>
 				<p className="text-lg opacity-60">
-					Create a ideal and start writing
+					distraction-free canvas for your thoughts.
 				</p>
 			</div>
 		);
