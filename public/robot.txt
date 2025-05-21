@@ -1,0 +1,6 @@
+# robots.txt for ideal-editor.netlify.app
+
+User-agent: *
+Allow: /
+
+Sitemap: https://ideal-editor.netlify.app/sitemap.xml

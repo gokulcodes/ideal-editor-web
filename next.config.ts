@@ -5,6 +5,7 @@ const nextConfig = withPWA({
 	/* config options here */
 	// devIndicators: false,
 	dest: 'public',
+	disable: process.env.NODE_ENV === 'development',
 	register: true,
 	skipWaiting: true,
 });
