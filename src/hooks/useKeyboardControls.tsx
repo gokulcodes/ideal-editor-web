@@ -12,7 +12,8 @@ export default function useKeyboardControls(
 	editorState: EditorStateType,
 	isReaderMode: boolean,
 	editorDispatch: React.Dispatch<ActionType>,
-	editorRef: HTMLDivElement | null
+	editorRef: HTMLDivElement | null,
+	isFocused: boolean = false
 ) {
 	const editor = editorState.editor;
 	const { state, dispatch } = useContext(idealContext);
@@ -140,7 +141,7 @@ export default function useKeyboardControls(
 
 			event.preventDefault();
 
-			if (isIgnorableKeys(event) || isReaderMode) {
+			if (isIgnorableKeys(event) || isReaderMode || !isFocused) {
 				return;
 			}
 
@@ -201,7 +202,14 @@ export default function useKeyboardControls(
 
 			editorDispatch({ type: 'type', payload: editor });
 		},
-		[editorDispatch, handleKeyboardShortcuts, isReaderMode, cursor, editor]
+		[
+			editorDispatch,
+			handleKeyboardShortcuts,
+			isReaderMode,
+			cursor,
+			isFocused,
+			editor,
+		]
 	);
 
 	useEffect(() => {

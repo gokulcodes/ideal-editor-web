@@ -16,12 +16,12 @@ function Sidebar() {
 
 	return (
 		<aside
-			className={`${state.isSidebarAnimate ? 'animate-sidebarOpen' : 'animate-sidebarClose'} h-[100vh] bg-white overflow-hidden sticky left-0 top-0 bottom-0 md:w-1/4`}
+			className={`${state.isSidebarAnimate ? 'animate-sidebarOpen' : 'animate-sidebarClose'} h-[100vh] overflow-hidden absolute right-0 bottom-0 md:w-1/6 shadow-2xl`}
 		>
 			<div
 				ref={sideBarRef}
 				id="sidebar"
-				className={`bg-[#f0f0f0] dark:bg-[#101010] w-full absolute z-50 h-[100vh] flex flex-col border-r border-black/20 dark:border-white/20`}
+				className={`dark:bg-[#101010]/10 backdrop-blur-3xl w-full absolute z-50 h-[100vh] flex flex-col border-l border-black/20 dark:border-white/20`}
 			>
 				<LogoView />
 				<FileView />

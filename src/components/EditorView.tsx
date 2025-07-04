@@ -10,7 +10,6 @@ import React, {
 	useEffect,
 	Fragment,
 	useRef,
-	useState,
 	// useCallback,
 	// useState,
 } from 'react';
@@ -19,10 +18,11 @@ import Editor from '@/structure/IdealEditor';
 
 export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
-	const {
-		state: { selectedFileId, isReaderMode },
-	} = useContext(idealContext);
-	const [currentContent, setCurrentContent] = useState<File | null>();
+	const [isFocused, setIsFocused] = React.useState(false);
+	const { state: idealState, dispatch: idealDispatch } =
+		useContext(idealContext);
+	const { selectedFileId, isReaderMode, currentContent } = idealState;
+	// const [currentContent, setCurrentContent] = useState<File | null>();
 	const editor = state.editor;
 	const editorRef = useRef<HTMLDivElement>(null);
 	const cursorRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,25 @@ export default function EditorView() {
 	// 	window.addEventListener('resize', handleEditorResize);
 	// }, [handleEditorResize]);
 
+	function handleSidebarCollapse() {
+		idealDispatch({
+			type: 'sidebarAnimate',
+			payload: { ...idealState, isSidebarAnimate: false },
+		});
+		setTimeout(() => {
+			idealDispatch({
+				type: 'toggleSidebar',
+				payload: { ...idealState, isSidebarOpen: false },
+			});
+		}, 400);
+	}
+
+	useEffect(() => {
+		if (isFocused) {
+			handleSidebarCollapse();
+		}
+	}, [isFocused]);
+
 	useEffect(() => {
 		cursorListener();
 	}, []);
@@ -84,10 +103,16 @@ export default function EditorView() {
 		state,
 		isReaderMode,
 		dispatch,
-		editorRef.current
+		editorRef.current,
+		isFocused
 	);
 	useMouseControls(state, dispatch, editorRef.current);
-	useCursorListener(editorRef.current, cursorRef.current, isReaderMode);
+	useCursorListener(
+		editorRef.current,
+		cursorRef.current,
+		isReaderMode,
+		isFocused
+	);
 
 	useEffect(() => {
 		editorRef.current?.addEventListener('scroll', () => {
@@ -109,7 +134,10 @@ export default function EditorView() {
 
 	useEffect(() => {
 		if (!selectedFileId) {
-			setCurrentContent(null);
+			idealDispatch({
+				type: 'setCurrentContent',
+				payload: { ...idealState, currentContent: null },
+			});
 			return;
 		}
 		const prevContentInfo = currentContent;
@@ -128,14 +156,16 @@ export default function EditorView() {
 		}
 
 		const fileInfo = localStorage.getItem(selectedFileId);
-		console.log(fileInfo);
 		if (!fileInfo) return;
 
 		const parsedFileInfo: File = JSON.parse(fileInfo);
 		if (!parsedFileInfo) {
 			return;
 		}
-		setCurrentContent(parsedFileInfo);
+		idealDispatch({
+			type: 'setCurrentContent',
+			payload: { ...idealState, currentContent: parsedFileInfo },
+		});
 		setTimeout(() => {
 			const newEditor = new Editor(parsedFileInfo.content);
 			dispatch({ type: 'resetEditor', payload: newEditor });
@@ -163,19 +193,21 @@ export default function EditorView() {
 
 	return (
 		<>
-			<div className="w-11/12 md:w-6/12 xl:w-9/12 flex items-center justify-center mt-20 mb-10">
+			{/* <div className="w-11/12 md:w-6/12 xl:w-9/12 flex items-center justify-center mt-20 mb-10">
 				<h1
 					style={{ letterSpacing: '10px' }}
 					className="text-base opacity-50 uppercase font-bold"
 				>
 					{currentContent.name}
 				</h1>
-			</div>
+			</div> */}
 			<main
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
-				className={`relative outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-9/12 self-center cursor-text h-[100vh]`}
+				onFocus={() => setIsFocused(true)}
+				onBlur={() => setIsFocused(false)}
+				className={`relative mt-5 outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-8/12 self-center cursor-text h-[100vh]`}
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {

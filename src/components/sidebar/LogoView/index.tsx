@@ -19,7 +19,7 @@ export default function LogoView() {
 		<div className="flex flex-row items-center gap-4 p-4 dark:invert border-b border-black/20">
 			<button
 				onClick={handleSidebarCollapse}
-				className="p-2 cursor-pointer  hover:bg-black/10 border text-black border-black/20 rounded-sm"
+				className="p-2 cursor-pointer hover:bg-black/10 border text-black border-black/20 rounded-sm"
 			>
 				<img
 					src="/icons/sidebar.png"

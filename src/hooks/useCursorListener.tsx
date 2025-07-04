@@ -3,14 +3,15 @@ import { useCallback, useEffect } from 'react';
 export default function useCursorListener(
 	editorRef: HTMLDivElement | null,
 	cursorRef: HTMLDivElement | null,
-	isReaderMode: boolean
+	isReaderMode: boolean,
+	isFocused: boolean = false
 ) {
 	// const [cursorVisibility, setCursorVisibility] = useState(true);
 	const handleCursorUpdate = useCallback(() => {
 		if (!cursorRef || !editorRef) {
 			return;
 		}
-		if (isReaderMode) {
+		if (isReaderMode || !isFocused) {
 			cursorRef.style.display = 'none';
 			return;
 		}
@@ -31,14 +32,14 @@ export default function useCursorListener(
 			const cursorLeftPos =
 					geometry.left - editorRef.offsetLeft + geometry.width,
 				cursorTopPos =
-					geometry.top - editorRef.offsetTop + editorRef.scrollTop,
+					geometry.top - editorRef.offsetTop + window.scrollY,
 				cursorHeight = geometry.height;
 
 			cursorRef.style.left = `${cursorLeftPos}px`;
 			cursorRef.style.height = `${cursorHeight}px`;
 			cursorRef.style.top = `${cursorTopPos}px`;
 		}
-	}, [cursorRef, isReaderMode, editorRef]);
+	}, [cursorRef, isReaderMode, editorRef, isFocused]);
 
 	useEffect(() => {
 		handleCursorUpdate();

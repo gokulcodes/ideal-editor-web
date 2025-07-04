@@ -14,6 +14,7 @@ export const initialState = {
 	folderRename: false,
 	isSaved: false,
 	isPopupOpen: false,
+	currentContent: null,
 };
 
 type idealContextType = {
@@ -29,6 +30,7 @@ type idealContextType = {
 	folderRename: boolean;
 	isSaved: boolean;
 	isPopupOpen: boolean;
+	currentContent: null | File;
 };
 
 export type ActionType = {
@@ -95,7 +97,11 @@ export const reducer = (
 				...state,
 				isPopupOpen: action.payload.isPopupOpen,
 			};
-
+		case 'setCurrentContent':
+			return {
+				...state,
+				currentContent: action.payload.currentContent,
+			};
 		default:
 			return state;
 	}

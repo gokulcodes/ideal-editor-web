@@ -55,6 +55,10 @@ export default function RootLayout({
 					href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
 					rel="stylesheet"
 				/>
+				<link
+					href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap"
+					rel="stylesheet"
+				/>
 				<Script
 					async={true}
 					id="schema-json-ld"

@@ -136,3 +136,22 @@ Special keyboard actions
 - [End] Move the cursor to end of the current line
 
 - Only allow AlphaNumeric, Special Characters & Emojis inside editor view
+
+can we do auto line breaks in render level?
+not possible because of line's dependencies for mouse and cursor movement
+only create new pre tag if user made line break is seen
+otherwise render everthing in a new
+
+hard line break is mandatory here - can we handle this correctly?
+whenever a line's content is overflowed - unlink overflowed character from the line - insert it to the beginning of the next line - if the next line is overflowed because of the character's inserted - unlink the overflowed characters of the next line - do this until the no-more line's are overflowing
+
+problems in auto line break logic - handle onresize the editor container - unless user created a new line, always collapse the overflowed letters
+back to it's original line if the space is available for them - one weird error when we cross 5th line - perfect rendering part, i see in some lines one character is overflowing the container for few seconds
+and settling to nextline's head
+
+        YOU NEED TO BE FAST !!!
+        Applying and giving your 100% >>>>> Preparing for interviews
+        If you want to become unbelievable, do things that you don't believe you are capable of
+
+Delete - modal popup
+frequent document save

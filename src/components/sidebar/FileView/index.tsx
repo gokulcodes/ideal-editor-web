@@ -7,6 +7,7 @@ import {
 	useContext,
 	useEffect,
 	useRef,
+	useState,
 } from 'react';
 import { File, Folder } from '@/types/types';
 import FolderCreateView from './FolderCreateView';
@@ -167,6 +168,7 @@ RenderFolder.displayName = 'RenderFolder';
 export default function FileView() {
 	const { state, dispatch } = useContext(idealContext);
 	const fileRef = useRef<HTMLDivElement>(null);
+	const [isFocused, setIsFocused] = useState(false);
 	// const [highlightPosition, setHighlightPosition] = useState<DOMRect>();
 	// const [scrollTop, setScrollTop] = useState(-1);
 	useEffect(() => {
@@ -263,6 +265,9 @@ export default function FileView() {
 
 	useEffect(() => {
 		function handleFileDelete(event: KeyboardEvent) {
+			if (!isFocused) {
+				return;
+			}
 			event.stopPropagation();
 			if (event.key == 'F2') {
 				// handleFileRename();
@@ -278,7 +283,14 @@ export default function FileView() {
 		return () => {
 			document.removeEventListener('keyup', handleFileDelete);
 		};
-	}, [dispatch, state, handlePopup, handleRename, updateSelectedFile]);
+	}, [
+		dispatch,
+		state,
+		handlePopup,
+		isFocused,
+		handleRename,
+		updateSelectedFile,
+	]);
 
 	if (!Array.isArray(state.files)) {
 		return (
@@ -322,8 +334,11 @@ export default function FileView() {
 	return (
 		<div
 			id="fileview"
+			tabIndex={0}
 			ref={fileRef}
-			className="w-full h-full overscroll-contain overflow-y-scroll select-none"
+			onFocus={() => setIsFocused(true)}
+			onBlur={() => setIsFocused(false)}
+			className="w-full h-full overscroll-contain outline-none overflow-y-scroll select-none"
 		>
 			<div className="flex flex-col gap-3 px-4 my-4">
 				<button
