@@ -12,7 +12,7 @@
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--font-editor: 'Space Mono', sans-serif;
+	--font-editor: 'DM Mono', sans-serif;
 	--font-sans: 'Host Grotesk', sans-serif;
 	--font-title: 'Unbounded', sans-serif;
 	--animate-cursor: cursorBlink 0.8s infinite;

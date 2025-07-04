@@ -250,7 +250,7 @@ const LineComponent = memo(
 			// before: `${props.lineIndex}`,
 			// onClick: (event) => props.editor.moveCursorToNthLine(props.lineIndex, 0),
 			// style: { wordBreak: 'break-all' },
-			className: `h-8  text-xl ${props.isReaderMode ? 'font-sans' : 'font-editor'} relative`,
+			className: `h-8 text-xl ${props.isReaderMode ? 'font-sans' : 'font-editor'} relative`,
 			// className: `h-8 text-xl relative before:opacity-50 before:hover:opacity-100 before:absolute before:w-10 w-full font-sans before:bg-gray-100/5 before:text-right before:content-[attr(before)]`,
 			dangerouslySetInnerHTML: { __html: props.htmlString },
 		})
