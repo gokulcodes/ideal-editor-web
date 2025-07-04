@@ -16,7 +16,7 @@ function Header() {
 					<img
 						src="/outline.png"
 						alt="file-mode"
-						className=" w-8 h-8"
+						className="dark:invert-0 invert w-8 h-8"
 					/>
 					{state.currentContent && (
 						<p className="text-2xl font-title capitalize">

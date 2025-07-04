@@ -95,7 +95,7 @@ export default function EditorStats() {
 			<DocumentSaver />
 			<div className="text-xs flex flex-row gap-2 opacity-100">
 				<p>Lines </p>
-				<NumberAnimate counter={editor.totalLineCount} />
+				<NumberAnimate counter={editor.totalLineCount + 1} />
 			</div>
 			<span className="opacity-40">|</span>
 			<div className="text-xs flex flex-row gap-2 opacity-100">

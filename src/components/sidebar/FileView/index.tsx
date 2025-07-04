@@ -274,10 +274,10 @@ export default function FileView() {
 				handleRename();
 				return;
 			}
-			if (event.key !== 'Backspace') {
-				return;
-			}
-			handlePopup();
+			// if (event.key !== 'Backspace') {
+			// 	return;
+			// }
+			// handlePopup();
 		}
 		document.addEventListener('keyup', handleFileDelete);
 		return () => {

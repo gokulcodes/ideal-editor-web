@@ -32,7 +32,7 @@ export default function useCursorListener(
 			const cursorLeftPos =
 					geometry.left - editorRef.offsetLeft + geometry.width,
 				cursorTopPos =
-					geometry.top - editorRef.offsetTop + window.scrollY,
+					geometry.top - editorRef.offsetTop + window.scrollY - 3,
 				cursorHeight = geometry.height;
 
 			cursorRef.style.left = `${cursorLeftPos}px`;
