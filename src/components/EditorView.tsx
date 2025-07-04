@@ -15,6 +15,7 @@ import React, {
 } from 'react';
 import { File } from '@/types/types';
 import Editor from '@/structure/IdealEditor';
+// import { isMobileDevice } from '@/structure/editorUtils';
 
 export default function EditorView() {
 	const { state, dispatch } = useContext(editorContext);
@@ -201,10 +202,12 @@ export default function EditorView() {
 					{currentContent.name}
 				</h1>
 			</div> */}
-			<main
+			<div
 				ref={editorRef}
 				autoFocus
 				tabIndex={0}
+				// style={{ caretColor: 'transparent' }}
+				// contentEditable={isMobileDevice()}
 				onFocus={() => setIsFocused(true)}
 				onBlur={() => setIsFocused(false)}
 				className={`relative mt-5 outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-8/12 self-center cursor-text h-[100vh]`}
@@ -229,7 +232,7 @@ export default function EditorView() {
 						className={`${isTyping ? '' : 'animate-cursor'} pointer-events-none  min-h-8 transform mt-[1px] -scale-x-50 absolute w-[2px] dark:bg-white bg-black mb-0 overflow-hidden tracking-tighter white`}
 					/>
 				)}
-			</main>
+			</div>
 		</>
 	);
 }

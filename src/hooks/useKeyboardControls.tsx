@@ -1,5 +1,11 @@
 import { ActionType, EditorStateType } from '@/controller/editorContext';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import {
 	isCursorMoveEvent,
 	isIgnorableKeys,
@@ -7,6 +13,7 @@ import {
 } from './hooksUtils';
 import idealContext from '@/controller/idealContext';
 import { File } from '@/types/types';
+// import { isMobileDevice } from '@/structure/editorUtils';
 
 export default function useKeyboardControls(
 	editorState: EditorStateType,
@@ -138,7 +145,6 @@ export default function useKeyboardControls(
 	const handleKeyDown = useCallback(
 		async (event: KeyboardEvent) => {
 			handleTypingState();
-
 			event.preventDefault();
 
 			if (isIgnorableKeys(event) || isReaderMode || !isFocused) {
@@ -194,8 +200,10 @@ export default function useKeyboardControls(
 							async () => await editor.selectionCrud('DELETE')
 						);
 					}
+					const letter = event.key;
+
 					editor.executeCommand(() =>
-						cursor.lineCursor.addLetter(event.key)
+						cursor.lineCursor.addLetter(letter)
 					);
 					break;
 			}
@@ -217,7 +225,6 @@ export default function useKeyboardControls(
 		if (!editorRef) {
 			return;
 		}
-
 		editorRef.addEventListener('keydown', handleKeyDown);
 		return () => {
 			editorRef.removeEventListener('keydown', handleKeyDown);
