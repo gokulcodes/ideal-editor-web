@@ -67,7 +67,7 @@ export default function EditorStats() {
 	} = useContext(editorContext);
 	const { state, dispatch } = useContext(idealContext);
 
-	if (!state.selectedFileId || state.isReaderMode) {
+	if (!state.selectedItem?.id || state.isReaderMode) {
 		return null;
 	}
 	function handleExitFocusMode() {

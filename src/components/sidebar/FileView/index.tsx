@@ -15,8 +15,7 @@ import FileCreateView from './FileCreateView';
 import Modal from '@/components/modal';
 
 type RenderFolderType = {
-	updateSelectedFile: (id: string) => void;
-	selectedFileId: string;
+	updateSelectedItem: (item: File | Folder | null) => void;
 	files: Array<File | Folder> | null;
 	isInnerFolderView: boolean;
 };
@@ -42,17 +41,16 @@ function Hightlighter() {
 }
 
 const RenderFolder = memo((props: RenderFolderType) => {
-	const { updateSelectedFile, selectedFileId, files, isInnerFolderView } =
-		props;
+	const { updateSelectedItem, files, isInnerFolderView } = props;
 	const { state } = useContext(idealContext);
 
 	const isFolderCreateViewOpen = useCallback(
-		(id: string) => id === selectedFileId && state.newFolderCreate,
-		[selectedFileId, state.newFolderCreate]
+		(id: string) => id === state.selectedItem?.id && state.newFolderCreate,
+		[state.selectedItem, state.newFolderCreate]
 	);
 	const isFileCreateViewOpen = useCallback(
-		(id: string) => id === selectedFileId && state.newFileCreate,
-		[selectedFileId, state.newFileCreate]
+		(id: string) => id === state.selectedItem?.id && state.newFileCreate,
+		[state.selectedItem, state.newFileCreate]
 	);
 
 	function FileOrFolderCreateView(id: string) {
@@ -78,7 +76,7 @@ const RenderFolder = memo((props: RenderFolderType) => {
 					// render folders
 					return (
 						<details
-							className={`relative text-black [open]:bg-black/10 border-t border-b border-transparent hover:border-black/10 pl-3 ${selectedFileId === file.id ? ' border-black/5' : ''} `}
+							className={`relative text-black [open]:bg-black/10 border-t border-b border-transparent hover:border-black/10 pl-3 ${state.selectedItem?.id === file.id ? 'bg-black/10 ' : ''} `}
 							key={file.id}
 							onClick={(event) => {
 								event.stopPropagation();
@@ -95,12 +93,12 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								// 	const geometry =
 								// 		element.getBoundingClientRect();
 								// 	}
-								updateSelectedFile(file.id);
+								updateSelectedItem(file);
 							}}
 						>
 							<summary className="p-2">
 								{state.folderRename &&
-								file.id === state.selectedFileId ? (
+								file.id === state.selectedItem?.id ? (
 									<FolderCreateView
 										isInnerFolderView={isInnerFolderView}
 									/>
@@ -111,15 +109,17 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								)}
 							</summary>
 							{/* {file.id === selectedFileId && <Hightlighter />} */}
-							<div className="relative pl-4">
+							<div className="relative pl-4 pb-5">
 								<RenderFolder
-									updateSelectedFile={updateSelectedFile}
-									selectedFileId={selectedFileId}
+									updateSelectedItem={updateSelectedItem}
 									files={file.childFiles}
 									isInnerFolderView={true}
 								/>
 								{FileOrFolderCreateView(file.id)}
 							</div>
+							{/* {file.id === state.selectedItem?.id && (
+								<Hightlighter />
+							)} */}
 						</details>
 					);
 				}
@@ -134,10 +134,11 @@ const RenderFolder = memo((props: RenderFolderType) => {
 								// const geometry =
 								// 	element.getBoundingClientRect();
 								// console.log(geometry);
-								updateSelectedFile(file.id);
+								updateSelectedItem(file);
 							}}
 						>
-							{state.fileRename && file.id === selectedFileId ? (
+							{state.fileRename &&
+							file.id === state.selectedItem?.id ? (
 								<FileCreateView
 									isInnerFolderView={isInnerFolderView}
 								/>
@@ -153,7 +154,9 @@ const RenderFolder = memo((props: RenderFolderType) => {
 									</span>
 								</Fragment>
 							)}
-							{file.id === selectedFileId && <Hightlighter />}
+							{file.id === state.selectedItem?.id && (
+								<Hightlighter />
+							)}
 						</span>
 						{FileOrFolderCreateView(file.id)}
 					</>
@@ -201,11 +204,11 @@ export default function FileView() {
 	// 	}, 1000);
 	// }, []);
 
-	const updateSelectedFile = useCallback(
-		(id: string) => {
+	const updateSelectedItem = useCallback(
+		(item: File | Folder | null) => {
 			dispatch({
-				type: 'updateSelectedFileId',
-				payload: { ...state, selectedFileId: id },
+				type: 'updateSelectedItem',
+				payload: { ...state, selectedItem: item },
 			});
 			// setHighlightPosition(position);
 			// console.log(position);
@@ -231,8 +234,10 @@ export default function FileView() {
 	}
 
 	function handleRename() {
-		const fileInfo = localStorage.getItem(state.selectedFileId);
-		console.log(fileInfo);
+		if (!state.selectedItem) {
+			return;
+		}
+		const fileInfo = localStorage.getItem(state.selectedItem?.id);
 		if (!fileInfo) {
 			return;
 		}
@@ -249,16 +254,18 @@ export default function FileView() {
 		if (files) {
 			let parsedFiles: Array<File | Folder> = JSON.parse(files);
 			parsedFiles = parsedFiles.filter(
-				(file: File | Folder) => file.id !== state.selectedFileId
+				(file: File | Folder) => file.id !== state.selectedItem?.id
 			);
 			dispatch({
 				type: 'fileUpdate',
 				payload: { ...state, files: parsedFiles },
 			});
 			localStorage.setItem('files', JSON.stringify(parsedFiles));
-			localStorage.removeItem(state.selectedFileId);
-			if (parsedFiles.length) updateSelectedFile(parsedFiles[0].id);
-			else updateSelectedFile('');
+			if (state.selectedItem) {
+				localStorage.removeItem(state.selectedItem?.id);
+			}
+			if (parsedFiles.length) updateSelectedItem(parsedFiles[0]);
+			else updateSelectedItem(null);
 			handlePopup();
 		}
 	}
@@ -289,7 +296,7 @@ export default function FileView() {
 		handlePopup,
 		isFocused,
 		handleRename,
-		updateSelectedFile,
+		updateSelectedItem,
 	]);
 
 	if (!Array.isArray(state.files)) {
@@ -370,8 +377,7 @@ export default function FileView() {
 			<div className="w-full dark:invert">
 				<Suspense fallback={<p>Loading...</p>}>
 					<RenderFolder
-						selectedFileId={state.selectedFileId}
-						updateSelectedFile={updateSelectedFile}
+						updateSelectedItem={updateSelectedItem}
 						files={state.files}
 						isInnerFolderView={false}
 					/>
@@ -385,10 +391,10 @@ export default function FileView() {
 					/>
 				)} */}
 				</Suspense>
-				{state.newFileCreate && !state.selectedFileId && (
+				{state.newFileCreate && !state.selectedItem && (
 					<FileCreateView isInnerFolderView={false} />
 				)}
-				{state.newFolderCreate && !state.selectedFileId && (
+				{state.newFolderCreate && !state.selectedItem && (
 					<FolderCreateView isInnerFolderView={false} />
 				)}
 			</div>

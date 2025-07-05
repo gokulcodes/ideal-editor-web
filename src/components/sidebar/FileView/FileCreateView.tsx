@@ -41,7 +41,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 						continue;
 					}
 
-					if (files.id !== state.selectedFileId) {
+					if (files.id !== state.selectedItem?.id) {
 						if (files.childFiles.length) {
 							fileSearch(files.childFiles);
 						}
@@ -105,16 +105,16 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 					// if (files.type === 'file') {
 					// 	continue;
 					// }
-					if (files.id === state.selectedFileId) {
+					if (files.id === state.selectedItem?.id) {
 						const fileInfo = localStorage.getItem(
-							state.selectedFileId
+							state.selectedItem?.id
 						);
 						if (fileInfo) {
 							const parsedFileInfo: File = JSON.parse(fileInfo);
 							if (parsedFileInfo) parsedFileInfo.name = value;
 							console.log(parsedFileInfo);
 							localStorage.setItem(
-								state.selectedFileId,
+								state.selectedItem?.id,
 								JSON.stringify(parsedFileInfo)
 							);
 						}
@@ -123,7 +123,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 
 					if (
 						files.type === 'folder' &&
-						files.id !== state.selectedFileId
+						files.id !== state.selectedItem?.id
 					) {
 						if (files.childFiles.length) {
 							fileSearch(files.childFiles);

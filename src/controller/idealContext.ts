@@ -6,7 +6,7 @@ export const initialState = {
 	isSidebarAnimate: true,
 	newFileCreate: false,
 	newFolderCreate: false,
-	selectedFileId: '',
+	selectedItem: null,
 	files: null,
 	isFocusMode: false,
 	isReaderMode: false,
@@ -22,7 +22,7 @@ type idealContextType = {
 	isSidebarAnimate: boolean;
 	newFileCreate: boolean;
 	newFolderCreate: boolean;
-	selectedFileId: string;
+	selectedItem: File | Folder | null;
 	files: Array<File | Folder> | null;
 	isFocusMode: boolean;
 	isReaderMode: boolean;
@@ -57,10 +57,10 @@ export const reducer = (
 				...state,
 				newFolderCreate: action.payload.newFolderCreate,
 			};
-		case 'updateSelectedFileId':
+		case 'updateSelectedItem':
 			return {
 				...state,
-				selectedFileId: action.payload.selectedFileId,
+				selectedItem: action.payload.selectedItem,
 			};
 		case 'fileUpdate':
 			return {

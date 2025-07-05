@@ -12,7 +12,7 @@ function DocumentSaver() {
 	}
 
 	return (
-		<div className="dark:invert animate-sidebarOpen flex items-center justify-center gap-2">
+		<div className="dark:invert animate-open flex items-center justify-center gap-2">
 			<img
 				src="/icons/checked.png"
 				alt="checked"

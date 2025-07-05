@@ -22,7 +22,7 @@ export default function EditorView() {
 	const [isFocused, setIsFocused] = React.useState(false);
 	const { state: idealState, dispatch: idealDispatch } =
 		useContext(idealContext);
-	const { selectedFileId, isReaderMode, currentContent } = idealState;
+	const { selectedItem, isReaderMode, currentContent } = idealState;
 	// const [currentContent, setCurrentContent] = useState<File | null>();
 	const editor = state.editor;
 	const editorRef = useRef<HTMLDivElement>(null);
@@ -134,7 +134,7 @@ export default function EditorView() {
 	}, []);
 
 	useEffect(() => {
-		if (!selectedFileId) {
+		if (!selectedItem || selectedItem?.type === 'folder') {
 			idealDispatch({
 				type: 'setCurrentContent',
 				payload: { ...idealState, currentContent: null },
@@ -156,7 +156,7 @@ export default function EditorView() {
 			}
 		}
 
-		const fileInfo = localStorage.getItem(selectedFileId);
+		const fileInfo = localStorage.getItem(selectedItem?.id);
 		if (!fileInfo) return;
 
 		const parsedFileInfo: File = JSON.parse(fileInfo);
@@ -175,7 +175,7 @@ export default function EditorView() {
 			}, 10);
 		}, 0);
 		return () => {};
-	}, [selectedFileId, dispatch]);
+	}, [selectedItem, dispatch]);
 
 	if (!currentContent) {
 		return (

@@ -13,7 +13,10 @@ export default function useDocumentSaver() {
 			return;
 		}
 		const content = editor.getAllContent;
-		const id = state.selectedFileId;
+		const id = state.selectedItem?.id;
+		if (!id) {
+			return;
+		}
 		const file = localStorage.getItem(id);
 		if (file) {
 			const curr: File = JSON.parse(file);

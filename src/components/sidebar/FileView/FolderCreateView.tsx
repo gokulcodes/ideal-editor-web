@@ -41,7 +41,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 					}
 
 					// folders
-					if (files.id !== state.selectedFileId) {
+					if (files.id !== state.selectedItem?.id) {
 						if (files.childFiles.length) {
 							fileSearch(files.childFiles);
 						}
@@ -108,16 +108,16 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 					// if (files.type === 'file') {
 					// 	continue;
 					// }
-					if (files.id === state.selectedFileId) {
+					if (files.id === state.selectedItem?.id) {
 						const fileInfo = localStorage.getItem(
-							state.selectedFileId
+							state.selectedItem?.id
 						);
 						if (fileInfo) {
 							const parsedFileInfo: File = JSON.parse(fileInfo);
 							if (parsedFileInfo) parsedFileInfo.name = value;
 							console.log(parsedFileInfo);
 							localStorage.setItem(
-								state.selectedFileId,
+								state.selectedItem?.id,
 								JSON.stringify(parsedFileInfo)
 							);
 						}
@@ -126,7 +126,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 
 					if (
 						files.type === 'folder' &&
-						files.id !== state.selectedFileId
+						files.id !== state.selectedItem?.id
 					) {
 						if (files.childFiles.length) {
 							fileSearch(files.childFiles);
@@ -194,7 +194,7 @@ function FolderCreateView(props: { isInnerFolderView: boolean }) {
 				<img
 					src="/icons/add-folder.png"
 					alt="file-mode"
-					className="w-4 h-4"
+					className="w-5 h-5"
 				/>
 			</span>
 			<input
