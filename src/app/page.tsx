@@ -15,7 +15,7 @@ export default function Home() {
 				<img
 					src="/outline.png"
 					alt="outlogo"
-					className="opacity-15 transform scale-100"
+					className="opacity-15 dark:invert-0 invert transform scale-100"
 				/>
 				<h1 className="text-2xl font-bold">Ideal Editor</h1>
 				<p className="text-lg opacity-60">

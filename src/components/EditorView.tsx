@@ -179,11 +179,11 @@ export default function EditorView() {
 
 	if (!currentContent) {
 		return (
-			<div className="w-full h-[100vh] flex flex-col items-center justify-center gap-5">
+			<div className="w-full h-[90vh] flex flex-col items-center justify-center gap-5">
 				<img
 					src="/outline.png"
 					alt="outlogo"
-					className="opacity-15 transform scale-100"
+					className="opacity-15 dark:invert-0 invert transform scale-100"
 				/>
 				<p className="text-lg opacity-60">
 					distraction-free canvas for your thoughts.
@@ -210,7 +210,7 @@ export default function EditorView() {
 				// contentEditable={isMobileDevice()}
 				onFocus={() => setIsFocused(true)}
 				onBlur={() => setIsFocused(false)}
-				className={`relative mt-5 outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-8/12 self-center cursor-text h-[100vh]`}
+				className={`relative mt-5 outline-none ${!isReaderMode ? 'select-none' : ''}  w-11/12 md:w-6/12 xl:w-8/12 self-center cursor-text h-[90vh]`}
 			>
 				{editor.map((htmlString: string, index: number) => {
 					// if (index >= topLine) {

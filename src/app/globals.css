@@ -23,7 +23,7 @@
 	@keyframes open {
 		0% {
 			opacity: 0;
-			transform: translateY(40px);
+			transform: translateY(10px);
 			transform-origin: center;
 		}
 		100% {

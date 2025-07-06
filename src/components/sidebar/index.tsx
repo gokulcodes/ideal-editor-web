@@ -15,11 +15,11 @@ function Sidebar() {
 	}
 
 	return (
-		<aside className="h-[100vh] overflow-hidden  absolute right-0 bottom-0 w-full shadow-2xl">
+		<aside className="h-[100vh] overflow-hidden absolute right-0 bottom-0 w-full">
 			<div
 				ref={sideBarRef}
 				id="sidebar"
-				className={`bg-background/40 ${state.isSidebarAnimate ? 'animate-sidebarOpen' : 'animate-sidebarClose'} backdrop-blur-3xl w-10/12 md:w-1/5 absolute right-0 z-50 h-[100vh] flex flex-col border-l border-black/20 dark:border-white/20`}
+				className={`bg-background/40 ${state.isSidebarAnimate ? 'animate-sidebarOpen' : 'animate-sidebarClose'} backdrop-blur-3xl w-10/12 md:w-1/5 fixed right-0 z-50 h-[100vh] flex flex-col border-l border-black/20 dark:border-white/20 shadow-2xl`}
 			>
 				<LogoView />
 				<FileView />

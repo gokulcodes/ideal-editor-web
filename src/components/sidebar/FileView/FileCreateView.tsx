@@ -204,7 +204,7 @@ function FileCreateView(props: { isInnerFolderView: boolean }) {
 						? handleFileRename(event.target.value)
 						: handleFileCreation(event.target.value)
 				}
-				className="border bg-black/20 outline-none w-full focus-within:border-blue-400 border-white/5"
+				className="border bg-black/20 text-black outline-none w-full focus-within:border-blue-400 border-white/5"
 			/>
 		</div>
 	);

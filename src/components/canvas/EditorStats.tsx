@@ -49,7 +49,7 @@ function NumberAnimate(props: { counter: number }) {
 		);
 	});
 	return (
-		<div className="relative flex items-center justify-center">
+		<div className="relative flex items-center transition-all duration-300 ease-in-out justify-center">
 			<div
 				id="editorstats"
 				className="flex z-10 flex-row gap-0 items-center"
