@@ -15,7 +15,7 @@ function Sidebar() {
 	}
 
 	return (
-		<aside className="h-[100vh] overflow-hidden absolute right-0 bottom-0 w-full">
+		<aside className="h-[100vh] overflow-hidden absolute right-0 bottom-0 w-full shadow-2xl">
 			<div
 				ref={sideBarRef}
 				id="sidebar"

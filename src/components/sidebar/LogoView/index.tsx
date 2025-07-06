@@ -29,7 +29,7 @@ export default function LogoView() {
 			</button>
 			<img
 				className="w-20 invert -0 h-auto"
-				src="/ideal.png"
+				src="/icons/ideal.png"
 				alt="ideal-logo"
 			/>
 		</div>
