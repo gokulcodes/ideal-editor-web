@@ -1,6 +1,6 @@
-# robots.txt for ideal-editor.netlify.app
+# robots.txt for ideal.gokulcodes.dev
 
 User-agent: *
 Allow: /
 
-Sitemap: https://ideal-editor.netlify.app/sitemap.xml
+Sitemap: https://ideal.gokulcodes.dev/sitemap.xml
